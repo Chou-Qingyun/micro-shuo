@@ -3,6 +3,8 @@ import { getCategories, getNovels } from "@/lib/repository";
 import { absoluteUrl } from "@/lib/site";
 import type { Category, Chapter, Novel } from "@/lib/sample-data";
 
+export const dynamic = "force-dynamic";
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [categories, novels] = await Promise.all([getCategories(), getNovels()]);
   const typedCategories = categories as Category[];

@@ -16,6 +16,8 @@ export const metadata: Metadata = {
   },
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function SearchPage({ searchParams }: PageProps) {
   const { q = "" } = await searchParams;
   const query = q.trim();

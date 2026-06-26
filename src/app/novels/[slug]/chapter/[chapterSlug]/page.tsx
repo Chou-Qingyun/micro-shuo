@@ -16,6 +16,8 @@ type PageProps = {
   params: Promise<{ slug: string; chapterSlug: string }>;
 };
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug, chapterSlug } = await params;
   const result = await getChapter(slug, chapterSlug);

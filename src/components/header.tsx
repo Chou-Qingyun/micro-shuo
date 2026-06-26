@@ -3,10 +3,23 @@ import { BookHeart, Search } from "lucide-react";
 import { getCategories } from "@/lib/repository";
 import { UserMenu } from "@/components/user-menu";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
-import type { Category } from "@/lib/sample-data";
+import { categories as fallbackCategories, type Category } from "@/lib/sample-data";
+
+async function getNavigationCategories() {
+  if (process.env.SKIP_DATABASE_DURING_BUILD === "1") {
+    return fallbackCategories;
+  }
+
+  try {
+    return await getCategories();
+  } catch (error) {
+    console.error("Failed to load header categories.", error);
+    return fallbackCategories;
+  }
+}
 
 export async function Header() {
-  const categories = await getCategories();
+  const categories = await getNavigationCategories();
   const typedCategories = categories as Category[];
   const isAdmin = await isAdminAuthenticated();
 

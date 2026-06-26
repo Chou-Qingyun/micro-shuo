@@ -1,17 +1,14 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { NovelCard } from "@/components/novel-card";
-import { getCategories, getCategoryBySlug, getNovelsByCategory } from "@/lib/repository";
-import type { Category, Novel } from "@/lib/sample-data";
+import { getCategoryBySlug, getNovelsByCategory } from "@/lib/repository";
+import type { Novel } from "@/lib/sample-data";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
 };
 
-export async function generateStaticParams() {
-  const categories = await getCategories();
-  return (categories as Category[]).map((category: Category) => ({ slug: category.slug }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;

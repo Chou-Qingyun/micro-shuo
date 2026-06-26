@@ -6,6 +6,8 @@ import { SubscribeForm } from "@/components/subscribe-form";
 import { getCategories, getFeaturedNovels, getLatestNovels } from "@/lib/repository";
 import type { Category, Novel } from "@/lib/sample-data";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const [categories, featuredNovels, latestNovels] = await Promise.all([
     getCategories(),

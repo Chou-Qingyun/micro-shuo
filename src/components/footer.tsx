@@ -1,10 +1,23 @@
 import Link from "next/link";
 import { Mail, ShieldCheck } from "lucide-react";
 import { getCategories } from "@/lib/repository";
-import type { Category } from "@/lib/sample-data";
+import { categories as fallbackCategories, type Category } from "@/lib/sample-data";
+
+async function getFooterCategories() {
+  if (process.env.SKIP_DATABASE_DURING_BUILD === "1") {
+    return fallbackCategories;
+  }
+
+  try {
+    return await getCategories();
+  } catch (error) {
+    console.error("Failed to load footer categories.", error);
+    return fallbackCategories;
+  }
+}
 
 export async function Footer() {
-  const categories = await getCategories();
+  const categories = await getFooterCategories();
   const typedCategories = categories as Category[];
 
   return (
