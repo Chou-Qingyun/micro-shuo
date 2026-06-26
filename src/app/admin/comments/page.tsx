@@ -28,6 +28,30 @@ type CommentStatusCount = {
     status: number;
   };
 };
+type AdminComment = {
+  id: string;
+  body: string;
+  status: CommentStatusValue;
+  createdAt: Date;
+  user: {
+    displayName: string | null;
+    email: string;
+  } | null;
+  novel: {
+    title: string;
+    slug: string;
+  };
+  chapter: {
+    title: string;
+    slug: string;
+  } | null;
+};
+type CommentFilter = {
+  label: string;
+  href: string;
+  active: boolean;
+  count: number;
+};
 
 export const metadata: Metadata = {
   title: "评论管理",
@@ -73,6 +97,7 @@ export default async function AdminCommentsPage({ searchParams }: PageProps) {
       },
     }),
   ]);
+  const adminComments = comments as AdminComment[];
   const commentCounts = counts as CommentStatusCount[];
   const countMap = new Map<CommentStatusValue, number>(
     commentCounts.map((item: CommentStatusCount) => [item.status, item._count.status]),
@@ -81,7 +106,7 @@ export default async function AdminCommentsPage({ searchParams }: PageProps) {
     (total: number, item: CommentStatusCount) => total + item._count.status,
     0,
   );
-  const filters = [
+  const filters: CommentFilter[] = [
     { label: "全部", href: "/admin/comments", active: !statusFilter, count: totalCount },
     {
       label: "正常显示",
@@ -118,7 +143,7 @@ export default async function AdminCommentsPage({ searchParams }: PageProps) {
             <p className="mt-1 text-sm text-[#7a6b76]">默认显示最近 100 条评论。</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            {filters.map((filter) => (
+            {filters.map((filter: CommentFilter) => (
               <Link
                 key={filter.href}
                 href={filter.href}
@@ -133,14 +158,14 @@ export default async function AdminCommentsPage({ searchParams }: PageProps) {
         </div>
 
         <div className="grid gap-4">
-          {comments.length === 0 ? (
+          {adminComments.length === 0 ? (
             <div className="rounded-[8px] border border-dashed border-rose-100 bg-[#fffaf8] p-8 text-center">
               <MessageCircle className="mx-auto text-[#9b405e]" size={28} aria-hidden="true" />
               <p className="mt-3 text-sm font-semibold text-[#281f2d]">暂无评论</p>
               <p className="mt-1 text-sm text-[#7a6b76]">当前筛选条件下没有用户评论。</p>
             </div>
           ) : (
-            comments.map((comment) => {
+            adminComments.map((comment: AdminComment) => {
               const statusLabel = statusLabels[comment.status];
               const statusClass = statusClasses[comment.status];
               const frontUrl = comment.chapter

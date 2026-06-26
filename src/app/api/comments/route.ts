@@ -2,6 +2,15 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/user-auth";
 
+type PublicComment = {
+  id: string;
+  body: string;
+  createdAt: Date;
+  user: {
+    displayName: string | null;
+  } | null;
+};
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const novelSlug = searchParams.get("novelSlug");
@@ -24,8 +33,10 @@ export async function GET(request: Request) {
     take: 50,
   });
 
+  const typedComments = comments as PublicComment[];
+
   return NextResponse.json({
-    comments: comments.map((comment) => ({
+    comments: typedComments.map((comment: PublicComment) => ({
       id: comment.id,
       body: comment.body,
       createdAt: comment.createdAt.toISOString().slice(0, 10),

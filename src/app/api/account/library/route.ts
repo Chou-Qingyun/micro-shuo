@@ -2,6 +2,39 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/user-auth";
 
+type LibraryChapter = {
+  slug: string;
+  title: string;
+  chapterNumber: number;
+};
+type LibraryNovelBase = {
+  slug: string;
+  title: string;
+  coverUrl: string;
+  excerpt: string;
+};
+type LibraryNovelWithChapters = LibraryNovelBase & {
+  chapters: LibraryChapter[];
+};
+type ReadingRecord = {
+  progress: number;
+  updatedAt: Date;
+  novel: LibraryNovelBase & {
+    _count: {
+      chapters: number;
+    };
+  };
+  chapter: LibraryChapter;
+};
+type BookmarkRecord = {
+  createdAt: Date;
+  novel: LibraryNovelWithChapters;
+};
+type NovelSubscription = {
+  source: string;
+  createdAt: Date;
+};
+
 export async function GET(request: Request) {
   const user = await getAuthenticatedUser(request);
 
@@ -48,8 +81,9 @@ export async function GET(request: Request) {
     },
     orderBy: { createdAt: "desc" },
   });
-  const subscribedSlugs = novelSubscriptions
-    .map((subscription) => subscription.source?.replace(/^novel:/, ""))
+  const typedSubscriptions = novelSubscriptions as NovelSubscription[];
+  const subscribedSlugs = typedSubscriptions
+    .map((subscription: NovelSubscription) => subscription.source?.replace(/^novel:/, ""))
     .filter((slug): slug is string => Boolean(slug));
   const subscribedNovels = subscribedSlugs.length
     ? await prisma.novel.findMany({
@@ -64,10 +98,15 @@ export async function GET(request: Request) {
         },
       })
     : [];
-  const subscribedNovelMap = new Map(subscribedNovels.map((novel) => [novel.slug, novel]));
+  const typedRecords = records as ReadingRecord[];
+  const typedBookmarks = bookmarks as BookmarkRecord[];
+  const typedSubscribedNovels = subscribedNovels as LibraryNovelWithChapters[];
+  const subscribedNovelMap = new Map<string, LibraryNovelWithChapters>(
+    typedSubscribedNovels.map((novel: LibraryNovelWithChapters) => [novel.slug, novel]),
+  );
 
   return NextResponse.json({
-    books: records.map((record) => {
+    books: typedRecords.map((record: ReadingRecord) => {
       const chapterTotal = Math.max(record.novel._count.chapters, 1);
       const chapterProgress = Math.round((record.chapter.chapterNumber / chapterTotal) * 100);
 
@@ -82,7 +121,7 @@ export async function GET(request: Request) {
         updatedAt: record.updatedAt.toISOString().slice(0, 10),
       };
     }),
-    savedBooks: bookmarks.map((bookmark) => {
+    savedBooks: typedBookmarks.map((bookmark: BookmarkRecord) => {
       const firstChapter = bookmark.novel.chapters[0];
 
       return {
@@ -94,7 +133,7 @@ export async function GET(request: Request) {
         firstChapterSlug: firstChapter?.slug ?? null,
       };
     }),
-    subscribedBooks: novelSubscriptions.flatMap((subscription) => {
+    subscribedBooks: typedSubscriptions.flatMap((subscription: NovelSubscription) => {
       const novelSlug = subscription.source?.replace(/^novel:/, "") ?? "";
       const novel = subscribedNovelMap.get(novelSlug);
 

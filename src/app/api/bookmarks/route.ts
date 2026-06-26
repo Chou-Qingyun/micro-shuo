@@ -2,6 +2,14 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/user-auth";
 
+type BookmarkRecord = {
+  createdAt: Date;
+  novel: {
+    slug: string;
+    title: string;
+  };
+};
+
 export async function GET(request: Request) {
   const user = await getAuthenticatedUser(request);
 
@@ -31,8 +39,10 @@ export async function GET(request: Request) {
     },
   });
 
+  const typedBookmarks = bookmarks as BookmarkRecord[];
+
   return NextResponse.json({
-    bookmarks: bookmarks.map((bookmark) => ({
+    bookmarks: typedBookmarks.map((bookmark: BookmarkRecord) => ({
       slug: bookmark.novel.slug,
       title: bookmark.novel.title,
       createdAt: bookmark.createdAt,
@@ -102,4 +112,3 @@ export async function DELETE(request: Request) {
 
   return NextResponse.json({ saved: false });
 }
-
