@@ -21,6 +21,14 @@ const statusClasses = {
   PENDING: "bg-[#fff4d8] text-[#7b6338]",
 } as const;
 
+type CommentStatusValue = keyof typeof statusLabels;
+type CommentStatusCount = {
+  status: CommentStatusValue;
+  _count: {
+    status: number;
+  };
+};
+
 export const metadata: Metadata = {
   title: "评论管理",
 };
@@ -65,8 +73,14 @@ export default async function AdminCommentsPage({ searchParams }: PageProps) {
       },
     }),
   ]);
-  const countMap = new Map(counts.map((item) => [item.status, item._count.status]));
-  const totalCount = counts.reduce((total, item) => total + item._count.status, 0);
+  const commentCounts = counts as CommentStatusCount[];
+  const countMap = new Map<CommentStatusValue, number>(
+    commentCounts.map((item: CommentStatusCount) => [item.status, item._count.status]),
+  );
+  const totalCount = commentCounts.reduce(
+    (total: number, item: CommentStatusCount) => total + item._count.status,
+    0,
+  );
   const filters = [
     { label: "全部", href: "/admin/comments", active: !statusFilter, count: totalCount },
     {
