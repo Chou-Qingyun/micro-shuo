@@ -82,11 +82,18 @@ export default async function ChapterPage({ params }: PageProps) {
             </h1>
             <p className="mt-3 text-sm text-[#7a6b76]">Published {chapter.publishedAt}</p>
 
-            <div className="reader-content mt-9 text-[1.08rem] leading-9 text-[#352b37] sm:text-[1.16rem]">
-              {chapter.content.map((paragraph) => (
-                <p key={paragraph}>{paragraph}</p>
-              ))}
-            </div>
+            {chapter.contentHtml ? (
+              <div
+                className="reader-content mt-9 text-[1.08rem] leading-9 text-[#352b37] sm:text-[1.16rem]"
+                dangerouslySetInnerHTML={{ __html: chapter.contentHtml }}
+              />
+            ) : (
+              <div className="reader-content mt-9 text-[1.08rem] leading-9 text-[#352b37] sm:text-[1.16rem]">
+                {chapter.content.map((paragraph) => (
+                  <p key={paragraph}>{paragraph}</p>
+                ))}
+              </div>
+            )}
 
             <div className="mt-10 border-y border-rose-50 py-5">
               <AdSlot label="Chapter End AdSense Slot" />

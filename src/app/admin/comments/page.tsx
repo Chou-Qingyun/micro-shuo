@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Eye, EyeOff, MessageCircle, Trash2 } from "lucide-react";
+import { Eye, EyeOff, MessageCircle, Search, Trash2 } from "lucide-react";
 import { deleteCommentAction, hideCommentAction, showCommentAction } from "@/app/admin/actions";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { prisma } from "@/lib/prisma";
 
 type PageProps = {
-  searchParams: Promise<{ updated?: string; status?: string }>;
+  searchParams: Promise<{ updated?: string; status?: string; q?: string }>;
 };
 
 const statusLabels = {
@@ -76,12 +76,18 @@ function getStatusFilter(status?: string) {
 }
 
 export default async function AdminCommentsPage({ searchParams }: PageProps) {
-  const { updated, status } = await searchParams;
+  const { updated, status, q } = await searchParams;
   const statusFilter = getStatusFilter(status);
+  const search = q?.trim() || undefined;
   const notice = getNotice(updated);
   const [comments, counts] = await Promise.all([
     prisma.comment.findMany({
-      where: statusFilter ? { status: statusFilter } : undefined,
+      where: {
+        status: statusFilter,
+        user: search
+          ? { is: { displayName: { contains: search, mode: "insensitive" } } }
+          : undefined,
+      },
       orderBy: { createdAt: "desc" },
       take: 100,
       include: {
@@ -106,23 +112,30 @@ export default async function AdminCommentsPage({ searchParams }: PageProps) {
     (total: number, item: CommentStatusCount) => total + item._count.status,
     0,
   );
+  const buildFilterHref = (statusValue?: CommentStatusValue) => {
+    const params = new URLSearchParams();
+    if (statusValue) params.set("status", statusValue);
+    if (search) params.set("q", search);
+    const queryString = params.toString();
+    return queryString ? `/admin/comments?${queryString}` : "/admin/comments";
+  };
   const filters: CommentFilter[] = [
-    { label: "全部", href: "/admin/comments", active: !statusFilter, count: totalCount },
+    { label: "全部", href: buildFilterHref(), active: !statusFilter, count: totalCount },
     {
       label: "正常显示",
-      href: "/admin/comments?status=APPROVED",
+      href: buildFilterHref("APPROVED"),
       active: statusFilter === "APPROVED",
       count: countMap.get("APPROVED") ?? 0,
     },
     {
       label: "已屏蔽",
-      href: "/admin/comments?status=REJECTED",
+      href: buildFilterHref("REJECTED"),
       active: statusFilter === "REJECTED",
       count: countMap.get("REJECTED") ?? 0,
     },
     {
       label: "待审核",
-      href: "/admin/comments?status=PENDING",
+      href: buildFilterHref("PENDING"),
       active: statusFilter === "PENDING",
       count: countMap.get("PENDING") ?? 0,
     },
@@ -156,6 +169,32 @@ export default async function AdminCommentsPage({ searchParams }: PageProps) {
             ))}
           </div>
         </div>
+
+        <form method="get" className="mb-5 flex flex-wrap gap-2">
+          {statusFilter ? <input type="hidden" name="status" value={statusFilter} /> : null}
+          <input
+            type="text"
+            name="q"
+            defaultValue={search ?? ""}
+            placeholder="按用户名搜索评论..."
+            className="h-9 w-full rounded-[8px] border border-rose-100 bg-[#fffaf8] px-3 text-sm outline-none focus:border-[#c46b84] sm:w-64"
+          />
+          <button
+            type="submit"
+            className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[#9b405e] px-4 text-sm font-semibold text-white"
+          >
+            <Search size={15} aria-hidden="true" />
+            搜索
+          </button>
+          {search ? (
+            <Link
+              href={statusFilter ? `/admin/comments?status=${statusFilter}` : "/admin/comments"}
+              className="inline-flex h-9 items-center rounded-[8px] border border-rose-100 bg-white px-4 text-sm font-semibold text-[#6c5b68]"
+            >
+              清除
+            </Link>
+          ) : null}
+        </form>
 
         <div className="grid gap-4">
           {adminComments.length === 0 ? (

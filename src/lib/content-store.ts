@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { richContentToParagraphs, sanitizeRichContent } from "@/lib/rich-content";
 import type { Chapter, Novel } from "@/lib/sample-data";
 
 export type NovelInput = Omit<Novel, "chapters" | "updatedAt"> & {
@@ -37,14 +38,7 @@ export function slugify(value: string) {
 }
 
 export function normalizeContent(content: string | string[]) {
-  if (Array.isArray(content)) {
-    return content.filter((paragraph: string) => Boolean(paragraph));
-  }
-
-  return content
-    .split(/\n{2,}/)
-    .map((paragraph: string) => paragraph.trim())
-    .filter(Boolean);
+  return richContentToParagraphs(sanitizeRichContent(content));
 }
 
 function toNovelStatus(status: NovelInput["status"]): DbNovelStatus {
@@ -200,7 +194,8 @@ export async function createChapter(novelSlug: string, input: ChapterInput) {
     ) + 1;
   const slug = slugify(input.slug || `chapter-${chapterNumber}-${input.title}`);
 
-  const paragraphs = normalizeContent(input.content);
+  const richContent = sanitizeRichContent(input.content);
+  const paragraphs = richContentToParagraphs(richContent);
   const publishedAt = input.publishedAt ? new Date(input.publishedAt) : new Date();
 
   const chapter = await prisma.chapter.create({
@@ -210,7 +205,7 @@ export async function createChapter(novelSlug: string, input: ChapterInput) {
       slug,
       chapterNumber,
       publishedAt,
-      content: paragraphs.join("\n\n"),
+      content: richContent,
       wordCount: paragraphs.join(" ").split(/\s+/).filter(Boolean).length,
       seoTitle: input.seoTitle?.trim() || null,
       seoDescription: input.seoDescription?.trim() || null,
@@ -223,6 +218,7 @@ export async function createChapter(novelSlug: string, input: ChapterInput) {
     chapterNumber: chapter.chapterNumber,
     publishedAt: chapter.publishedAt.toISOString().slice(0, 10),
     content: paragraphs,
+    contentHtml: richContent,
     seoTitle: chapter.seoTitle,
     seoDescription: chapter.seoDescription,
   };
@@ -249,7 +245,8 @@ export async function updateChapter(novelSlug: string, chapterSlug: string, inpu
 
   const chapterNumber = input.chapterNumber || current.chapterNumber;
   const slug = slugify(input.slug || `chapter-${chapterNumber}-${input.title}`);
-  const paragraphs = normalizeContent(input.content);
+  const richContent = sanitizeRichContent(input.content);
+  const paragraphs = richContentToParagraphs(richContent);
   const publishedAt = input.publishedAt ? new Date(input.publishedAt) : current.publishedAt;
 
   const chapter = await prisma.chapter.update({
@@ -259,7 +256,7 @@ export async function updateChapter(novelSlug: string, chapterSlug: string, inpu
       slug,
       chapterNumber,
       publishedAt,
-      content: paragraphs.join("\n\n"),
+      content: richContent,
       wordCount: paragraphs.join(" ").split(/\s+/).filter(Boolean).length,
       seoTitle: input.seoTitle?.trim() || null,
       seoDescription: input.seoDescription?.trim() || null,
@@ -272,6 +269,7 @@ export async function updateChapter(novelSlug: string, chapterSlug: string, inpu
     chapterNumber: chapter.chapterNumber,
     publishedAt: chapter.publishedAt.toISOString().slice(0, 10),
     content: paragraphs,
+    contentHtml: richContent,
     seoTitle: chapter.seoTitle,
     seoDescription: chapter.seoDescription,
   };

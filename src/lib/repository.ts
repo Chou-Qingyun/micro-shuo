@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { contentToHtml, richContentToParagraphs } from "@/lib/rich-content";
 import type { Category, Chapter, Novel } from "@/lib/sample-data";
 
 type DbNovelStatus = "ONGOING" | "COMPLETED" | "HIATUS";
@@ -25,10 +26,7 @@ function toUiStatus(status: DbNovelStatus): Novel["status"] {
 }
 
 function splitChapterContent(content: string) {
-  return content
-    .split(/\n{2,}/)
-    .map((paragraph) => paragraph.trim())
-    .filter(Boolean);
+  return richContentToParagraphs(contentToHtml(content));
 }
 
 function mapChapter(chapter: NovelWithRelations["chapters"][number]): Chapter {
@@ -38,6 +36,7 @@ function mapChapter(chapter: NovelWithRelations["chapters"][number]): Chapter {
     chapterNumber: chapter.chapterNumber,
     publishedAt: toDateString(chapter.publishedAt),
     content: splitChapterContent(chapter.content),
+    contentHtml: contentToHtml(chapter.content),
     seoTitle: chapter.seoTitle,
     seoDescription: chapter.seoDescription,
   };

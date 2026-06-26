@@ -11,6 +11,7 @@ export type Chapter = {
   chapterNumber: number;
   publishedAt: string;
   content: string[];
+  contentHtml?: string | null;
   seoTitle?: string | null;
   seoDescription?: string | null;
 };

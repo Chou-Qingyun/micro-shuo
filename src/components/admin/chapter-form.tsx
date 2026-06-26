@@ -1,3 +1,5 @@
+import { RichTextEditor } from "@/components/admin/rich-text-editor";
+import { contentToHtml } from "@/lib/rich-content";
 import type { Chapter } from "@/lib/sample-data";
 
 export function ChapterForm({
@@ -11,7 +13,7 @@ export function ChapterForm({
   chapter?: Chapter;
   submitLabel?: string;
 }) {
-  const content = chapter?.content.join("\n\n") ?? "";
+  const contentHtml = contentToHtml(chapter?.contentHtml ?? chapter?.content ?? []);
 
   return (
     <form action={action} className="grid gap-5 rounded-[8px] border border-rose-100 bg-white p-6 shadow-sm">
@@ -58,17 +60,7 @@ export function ChapterForm({
         />
       </label>
 
-      <label className="grid gap-2 text-sm font-semibold text-[#3a303c]">
-        章节正文
-        <textarea
-          name="content"
-          required
-          rows={18}
-          placeholder="每个自然段之间空一行，前台阅读页会自动按段落展示。"
-          defaultValue={content}
-          className="rounded-[8px] border border-rose-100 bg-[#fffaf8] p-3 font-normal leading-7 outline-none focus:border-[#c46b84]"
-        />
-      </label>
+      <RichTextEditor name="content" label="章节正文" initialValue={contentHtml} />
 
       <section className="grid gap-4 rounded-[8px] border border-rose-100 bg-[#fffaf8] p-4">
         <div>
