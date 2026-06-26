@@ -10,6 +10,7 @@ export type ChapterInput = Omit<Chapter, "chapterNumber" | "content"> & {
   content: string | string[];
 };
 type NovelTagTransaction = Pick<typeof prisma, "novelTag" | "tag">;
+type ContentTransaction = Pick<typeof prisma, "category" | "novel" | "novelTag" | "tag">;
 type DbNovelStatus = "ONGOING" | "COMPLETED";
 
 export function today() {
@@ -74,7 +75,7 @@ export async function createNovel(input: NovelInput) {
 
   const tags = input.tags.map((tag) => tag.trim()).filter(Boolean);
 
-  return prisma.$transaction(async (transaction) => {
+  return prisma.$transaction(async (transaction: ContentTransaction) => {
     const category = await transaction.category.findUnique({
       where: { slug: input.categorySlug },
     });
@@ -127,7 +128,7 @@ export async function updateNovel(slug: string, input: NovelInput) {
 
   const tags = input.tags.map((tag) => tag.trim()).filter(Boolean);
 
-  return prisma.$transaction(async (transaction) => {
+  return prisma.$transaction(async (transaction: ContentTransaction) => {
     const category = await transaction.category.findUnique({
       where: { slug: input.categorySlug },
     });
