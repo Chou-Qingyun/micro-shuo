@@ -1,4 +1,3 @@
-import { NovelStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import type { Chapter, Novel } from "@/lib/sample-data";
 
@@ -11,6 +10,7 @@ export type ChapterInput = Omit<Chapter, "chapterNumber" | "content"> & {
   content: string | string[];
 };
 type NovelTagTransaction = Pick<typeof prisma, "novelTag" | "tag">;
+type DbNovelStatus = "ONGOING" | "COMPLETED";
 
 export function today() {
   return new Date().toISOString().slice(0, 10);
@@ -36,8 +36,8 @@ export function normalizeContent(content: string | string[]) {
     .filter(Boolean);
 }
 
-function toNovelStatus(status: NovelInput["status"]) {
-  return status === "Completed" ? NovelStatus.COMPLETED : NovelStatus.ONGOING;
+function toNovelStatus(status: NovelInput["status"]): DbNovelStatus {
+  return status === "Completed" ? "COMPLETED" : "ONGOING";
 }
 
 async function upsertNovelTags(transaction: NovelTagTransaction, novelId: string, tags: string[]) {

@@ -1,5 +1,5 @@
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient, NovelStatus } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { config as loadEnv } from "dotenv";
 import { readFile } from "node:fs/promises";
 
@@ -47,7 +47,7 @@ function slugify(value) {
 }
 
 function toStatus(status) {
-  return status === "Completed" ? NovelStatus.COMPLETED : NovelStatus.ONGOING;
+  return status === "Completed" ? "COMPLETED" : "ONGOING";
 }
 
 function dateFrom(value) {
@@ -165,4 +165,3 @@ try {
 } finally {
   await prisma.$disconnect();
 }
-

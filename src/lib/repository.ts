@@ -1,7 +1,7 @@
-import { NovelStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import type { Category, Chapter, Novel } from "@/lib/sample-data";
 
+type DbNovelStatus = "ONGOING" | "COMPLETED" | "HIATUS";
 type NovelWithRelations = Awaited<ReturnType<typeof getNovelRecords>>[number];
 type CategoryRecord = {
   name: string;
@@ -20,8 +20,8 @@ function toDateString(date: Date) {
   return date.toISOString().slice(0, 10);
 }
 
-function toUiStatus(status: NovelStatus): Novel["status"] {
-  return status === NovelStatus.COMPLETED ? "Completed" : "Ongoing";
+function toUiStatus(status: DbNovelStatus): Novel["status"] {
+  return status === "COMPLETED" ? "Completed" : "Ongoing";
 }
 
 function splitChapterContent(content: string) {
@@ -50,7 +50,7 @@ function mapNovel(novel: NovelWithRelations): Novel {
     author: novel.author,
     categorySlug: novel.category.slug,
     coverUrl: novel.coverUrl,
-    status: toUiStatus(novel.status),
+    status: toUiStatus(novel.status as DbNovelStatus),
     tags: novel.tags.map((item: NovelWithRelations["tags"][number]) => item.tag.name),
     excerpt: novel.excerpt,
     description: novel.description,
