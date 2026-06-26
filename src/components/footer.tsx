@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { Mail, ShieldCheck } from "lucide-react";
 import { getCategories } from "@/lib/repository";
+import type { Category } from "@/lib/sample-data";
 
 export async function Footer() {
   const categories = await getCategories();
+  const typedCategories = categories as Category[];
 
   return (
     <footer className="border-t border-rose-100 bg-[#281f2d] text-white">
@@ -30,7 +32,7 @@ export async function Footer() {
             Categories
           </p>
           <div className="mt-4 grid gap-2">
-            {categories.map((category) => (
+            {typedCategories.map((category: Category) => (
               <Link
                 key={category.slug}
                 href={`/category/${category.slug}`}

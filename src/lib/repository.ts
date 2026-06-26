@@ -3,6 +3,18 @@ import { prisma } from "@/lib/prisma";
 import type { Category, Chapter, Novel } from "@/lib/sample-data";
 
 type NovelWithRelations = Awaited<ReturnType<typeof getNovelRecords>>[number];
+type CategoryRecord = {
+  name: string;
+  slug: string;
+  description: string;
+  tone: string;
+};
+type ChapterResult = {
+  novel: Novel;
+  chapter: Chapter;
+  previousChapter?: Chapter;
+  nextChapter?: Chapter;
+};
 
 function toDateString(date: Date) {
   return date.toISOString().slice(0, 10);
@@ -39,13 +51,15 @@ function mapNovel(novel: NovelWithRelations): Novel {
     categorySlug: novel.category.slug,
     coverUrl: novel.coverUrl,
     status: toUiStatus(novel.status),
-    tags: novel.tags.map((item) => item.tag.name),
+    tags: novel.tags.map((item: NovelWithRelations["tags"][number]) => item.tag.name),
     excerpt: novel.excerpt,
     description: novel.description,
     seoTitle: novel.seoTitle,
     seoDescription: novel.seoDescription,
     updatedAt: toDateString(novel.updatedAt),
-    chapters: novel.chapters.map(mapChapter),
+    chapters: novel.chapters.map((chapter: NovelWithRelations["chapters"][number]) =>
+      mapChapter(chapter),
+    ),
   };
 }
 
@@ -75,7 +89,7 @@ export async function getCategories(): Promise<Category[]> {
     },
   });
 
-  return categories.map((category) => ({
+  return (categories as CategoryRecord[]).map((category: CategoryRecord) => ({
     name: category.name,
     slug: category.slug,
     description: category.description,
@@ -83,21 +97,21 @@ export async function getCategories(): Promise<Category[]> {
   }));
 }
 
-export async function getNovels() {
+export async function getNovels(): Promise<Novel[]> {
   const novels = await getNovelRecords();
-  return novels.map(mapNovel);
+  return novels.map((novel: NovelWithRelations) => mapNovel(novel));
 }
 
-export async function getFeaturedNovels() {
+export async function getFeaturedNovels(): Promise<Novel[]> {
   const novels = await getNovels();
   return novels.slice(0, 3);
 }
 
-export async function getLatestNovels() {
+export async function getLatestNovels(): Promise<Novel[]> {
   return getNovels();
 }
 
-export async function getCategoryBySlug(slug: string) {
+export async function getCategoryBySlug(slug: string): Promise<Category | undefined> {
   const category = await prisma.category.findUnique({
     where: { slug },
   });
@@ -114,7 +128,7 @@ export async function getCategoryBySlug(slug: string) {
   };
 }
 
-export async function getNovelsByCategory(slug: string) {
+export async function getNovelsByCategory(slug: string): Promise<Novel[]> {
   const novels = await prisma.novel.findMany({
     where: {
       category: {
@@ -137,10 +151,10 @@ export async function getNovelsByCategory(slug: string) {
     },
   });
 
-  return novels.map(mapNovel);
+  return (novels as NovelWithRelations[]).map((novel: NovelWithRelations) => mapNovel(novel));
 }
 
-export async function getNovelBySlug(slug: string) {
+export async function getNovelBySlug(slug: string): Promise<Novel | undefined> {
   const novel = await prisma.novel.findUnique({
     where: { slug },
     include: {
@@ -161,9 +175,12 @@ export async function getNovelBySlug(slug: string) {
   return novel ? mapNovel(novel) : undefined;
 }
 
-export async function getChapter(novelSlug: string, chapterSlug: string) {
+export async function getChapter(
+  novelSlug: string,
+  chapterSlug: string,
+): Promise<ChapterResult | null> {
   const novel = await getNovelBySlug(novelSlug);
-  const chapter = novel?.chapters.find((item) => item.slug === chapterSlug);
+  const chapter = novel?.chapters.find((item: Chapter) => item.slug === chapterSlug);
 
   if (!novel || !chapter) {
     return null;
@@ -173,10 +190,10 @@ export async function getChapter(novelSlug: string, chapterSlug: string) {
     novel,
     chapter,
     previousChapter: novel.chapters.find(
-      (item) => item.chapterNumber === chapter.chapterNumber - 1,
+      (item: Chapter) => item.chapterNumber === chapter.chapterNumber - 1,
     ),
     nextChapter: novel.chapters.find(
-      (item) => item.chapterNumber === chapter.chapterNumber + 1,
+      (item: Chapter) => item.chapterNumber === chapter.chapterNumber + 1,
     ),
   };
 }
@@ -190,7 +207,7 @@ export async function searchNovels(query: string): Promise<Novel[]> {
 
   const novels = await getNovels();
 
-  return novels.filter((novel) => {
+  return novels.filter((novel: Novel) => {
     const searchableText = [
       novel.title,
       novel.author,

@@ -5,6 +5,7 @@ import { Edit3, Eye, PlusCircle, Trash2 } from "lucide-react";
 import { deleteNovelAction } from "@/app/admin/actions";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { getCategories, getLatestNovels } from "@/lib/repository";
+import type { Category, Novel } from "@/lib/sample-data";
 
 type PageProps = {
   searchParams: Promise<{ deleted?: string }>;
@@ -19,9 +20,11 @@ export const dynamic = "force-dynamic";
 export default async function AdminNovelsPage({ searchParams }: PageProps) {
   const { deleted } = await searchParams;
   const [novels, categories] = await Promise.all([getLatestNovels(), getCategories()]);
+  const typedNovels = novels as Novel[];
+  const typedCategories = categories as Category[];
 
   function getCategoryName(slug: string) {
-    return categories.find((category) => category.slug === slug)?.name ?? slug;
+    return typedCategories.find((category: Category) => category.slug === slug)?.name ?? slug;
   }
 
   return (
@@ -36,7 +39,7 @@ export default async function AdminNovelsPage({ searchParams }: PageProps) {
         <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-semibold text-[#281f2d]">全部小说</h2>
-            <p className="mt-1 text-sm text-[#7a6b76]">当前共 {novels.length} 本小说。</p>
+            <p className="mt-1 text-sm text-[#7a6b76]">当前共 {typedNovels.length} 本小说。</p>
           </div>
           <Link
             href="/admin/novels/new"
@@ -48,7 +51,7 @@ export default async function AdminNovelsPage({ searchParams }: PageProps) {
         </div>
 
         <div className="grid gap-4">
-          {novels.map((novel) => (
+          {typedNovels.map((novel: Novel) => (
             <article
               key={novel.slug}
               className="grid gap-4 rounded-[8px] border border-rose-100 bg-[#fffaf8] p-4 md:grid-cols-[92px_1fr_auto]"

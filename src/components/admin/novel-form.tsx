@@ -56,7 +56,7 @@ export function NovelForm({
             defaultValue={novel?.categorySlug ?? categories[0]?.slug}
             className="h-11 rounded-[8px] border border-rose-100 bg-[#fffaf8] px-3 font-normal outline-none focus:border-[#c46b84]"
           >
-            {categories.map((category) => (
+            {categories.map((category: Category) => (
               <option key={category.slug} value={category.slug}>
                 {category.name}
               </option>

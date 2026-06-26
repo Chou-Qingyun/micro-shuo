@@ -4,6 +4,7 @@ import { createChapterAction } from "@/app/admin/actions";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { ChapterForm } from "@/components/admin/chapter-form";
 import { getNovelBySlug } from "@/lib/repository";
+import type { Chapter } from "@/lib/sample-data";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -29,8 +30,9 @@ export default async function NewChapterPage({ params }: PageProps) {
   }
 
   const action = createChapterAction.bind(null, novel.slug);
+  const typedChapters = novel.chapters as Chapter[];
   const nextChapterNumber =
-    Math.max(0, ...novel.chapters.map((chapter) => chapter.chapterNumber)) + 1;
+    Math.max(0, ...typedChapters.map((chapter: Chapter) => chapter.chapterNumber)) + 1;
 
   return (
     <AdminShell

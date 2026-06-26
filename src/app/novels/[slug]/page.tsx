@@ -10,6 +10,7 @@ import { JsonLd } from "@/components/json-ld";
 import { SubscribeForm } from "@/components/subscribe-form";
 import { getCategories, getNovelBySlug } from "@/lib/repository";
 import { novelJsonLd } from "@/lib/seo";
+import type { Category, Chapter } from "@/lib/sample-data";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -49,7 +50,8 @@ export default async function NovelDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const category = categories.find((item) => item.slug === novel.categorySlug);
+  const typedCategories = categories as Category[];
+  const category = typedCategories.find((item: Category) => item.slug === novel.categorySlug);
   const firstChapter = novel.chapters[0];
 
   return (
@@ -107,7 +109,7 @@ export default async function NovelDetailPage({ params }: PageProps) {
             <p className="mt-3 text-sm font-medium text-[#7a6b76]">By {novel.author}</p>
             <p className="mt-5 max-w-3xl text-lg leading-8 text-[#5f515f]">{novel.description}</p>
             <div className="mt-6 flex flex-wrap gap-2">
-              {novel.tags.map((tag) => (
+              {novel.tags.map((tag: string) => (
                 <span
                   key={tag}
                   className="inline-flex items-center gap-1 rounded-[8px] border border-rose-100 bg-[#fffaf8] px-3 py-1.5 text-xs font-semibold text-[#7a4c5a]"
@@ -140,7 +142,7 @@ export default async function NovelDetailPage({ params }: PageProps) {
                 {novel.chapters.length === 0 ? (
                   <p className="py-4 text-sm text-[#7a6b76]">No chapters published yet.</p>
                 ) : (
-                  novel.chapters.map((chapter) => (
+                  novel.chapters.map((chapter: Chapter) => (
                     <Link
                       key={chapter.slug}
                       href={`/novels/${novel.slug}/chapter/${chapter.slug}`}

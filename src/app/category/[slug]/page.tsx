@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { NovelCard } from "@/components/novel-card";
 import { getCategories, getCategoryBySlug, getNovelsByCategory } from "@/lib/repository";
+import type { Category, Novel } from "@/lib/sample-data";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -9,7 +10,7 @@ type PageProps = {
 
 export async function generateStaticParams() {
   const categories = await getCategories();
-  return categories.map((category) => ({ slug: category.slug }));
+  return (categories as Category[]).map((category: Category) => ({ slug: category.slug }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -39,6 +40,7 @@ export default async function CategoryPage({ params }: PageProps) {
   if (!category) {
     notFound();
   }
+  const typedNovels = novels as Novel[];
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
@@ -52,11 +54,10 @@ export default async function CategoryPage({ params }: PageProps) {
         <p className="mt-4 text-lg leading-8 text-[#5f515f]">{category.tone}</p>
       </div>
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {novels.map((novel) => (
+        {typedNovels.map((novel: Novel) => (
           <NovelCard key={novel.slug} novel={novel} />
         ))}
       </div>
     </div>
   );
 }
-

@@ -6,6 +6,7 @@ import { updateNovelAction } from "@/app/admin/actions";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { NovelForm } from "@/components/admin/novel-form";
 import { getCategories, getNovelBySlug } from "@/lib/repository";
+import type { Category, Chapter } from "@/lib/sample-data";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -33,6 +34,8 @@ export default async function EditNovelPage({ params, searchParams }: PageProps)
   }
 
   const updateAction = updateNovelAction.bind(null, novel.slug);
+  const typedCategories = categories as Category[];
+  const typedChapters = novel.chapters as Chapter[];
 
   return (
     <AdminShell title={`编辑小说：${novel.title}`} description="修改小说基础信息，管理章节内容和前台展示。">
@@ -52,13 +55,13 @@ export default async function EditNovelPage({ params, searchParams }: PageProps)
         </p>
       ) : null}
 
-      <NovelForm categories={categories} novel={novel} action={updateAction} submitLabel="保存修改" />
+      <NovelForm categories={typedCategories} novel={novel} action={updateAction} submitLabel="保存修改" />
 
       <section className="mt-6 rounded-[8px] border border-rose-100 bg-white p-6 shadow-sm">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-semibold text-[#281f2d]">章节列表</h2>
-            <p className="mt-1 text-sm text-[#7a6b76]">当前共 {novel.chapters.length} 章。</p>
+            <p className="mt-1 text-sm text-[#7a6b76]">当前共 {typedChapters.length} 章。</p>
           </div>
           <Link
             href={`/admin/novels/${novel.slug}/chapters/new`}
@@ -70,10 +73,10 @@ export default async function EditNovelPage({ params, searchParams }: PageProps)
         </div>
 
         <div className="divide-y divide-rose-50">
-          {novel.chapters.length === 0 ? (
+          {typedChapters.length === 0 ? (
             <p className="py-4 text-sm text-[#7a6b76]">暂无章节，请先添加第一章。</p>
           ) : (
-            novel.chapters.map((chapter) => (
+            typedChapters.map((chapter: Chapter) => (
               <div
                 key={chapter.slug}
                 className="flex flex-wrap items-center justify-between gap-4 py-4 text-sm"

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { BookOpenText, Layers3, MessageCircle, PlusCircle } from "lucide-react";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { getCategories, getLatestNovels } from "@/lib/repository";
+import type { Category, Novel } from "@/lib/sample-data";
 
 export const metadata: Metadata = {
   title: "后台管理",
@@ -12,16 +13,21 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
   const [categories, novels] = await Promise.all([getCategories(), getLatestNovels()]);
-  const chapterCount = novels.reduce((total, novel) => total + novel.chapters.length, 0);
+  const typedCategories = categories as Category[];
+  const typedNovels = novels as Novel[];
+  const chapterCount = typedNovels.reduce(
+    (total: number, novel: Novel) => total + novel.chapters.length,
+    0,
+  );
 
   return (
     <AdminShell title="数据概览" description="查看当前小说内容数量，并快速进入常用管理操作。">
       <div className="grid gap-4 md:grid-cols-3">
         {[
-          { label: "小说总数", value: novels.length, icon: BookOpenText },
+          { label: "小说总数", value: typedNovels.length, icon: BookOpenText },
           { label: "章节总数", value: chapterCount, icon: Layers3 },
-          { label: "分类数量", value: categories.length, icon: MessageCircle },
-        ].map((item) => (
+          { label: "分类数量", value: typedCategories.length, icon: MessageCircle },
+        ].map((item: { label: string; value: number; icon: typeof BookOpenText }) => (
           <div key={item.label} className="rounded-[8px] border border-rose-100 bg-white p-5 shadow-sm">
             <item.icon className="text-[#9b405e]" size={22} aria-hidden="true" />
             <p className="mt-4 text-sm font-semibold text-[#7a6b76]">{item.label}</p>
@@ -45,7 +51,7 @@ export default async function AdminDashboardPage() {
           </Link>
         </div>
         <div className="mt-5 divide-y divide-rose-50">
-          {novels.slice(0, 6).map((novel) => (
+          {typedNovels.slice(0, 6).map((novel: Novel) => (
             <Link
               key={novel.slug}
               href={`/admin/novels/${novel.slug}/edit`}

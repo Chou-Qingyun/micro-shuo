@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Search } from "lucide-react";
 import { NovelCard } from "@/components/novel-card";
 import { getLatestNovels, searchNovels } from "@/lib/repository";
+import type { Novel } from "@/lib/sample-data";
 
 type PageProps = {
   searchParams: Promise<{ q?: string }>;
@@ -19,6 +20,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
   const { q = "" } = await searchParams;
   const query = q.trim();
   const results = query ? await searchNovels(query) : await getLatestNovels();
+  const typedResults = results as Novel[];
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
@@ -48,15 +50,14 @@ export default async function SearchPage({ searchParams }: PageProps) {
       </div>
 
       <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {results.map((novel) => (
+        {typedResults.map((novel: Novel) => (
           <NovelCard key={novel.slug} novel={novel} />
         ))}
       </div>
 
-      {results.length === 0 ? (
+      {typedResults.length === 0 ? (
         <p className="mt-10 text-center text-sm text-[#7a6b76]">No matching stories yet.</p>
       ) : null}
     </div>
   );
 }
-

@@ -3,9 +3,11 @@ import { BookHeart, Search } from "lucide-react";
 import { getCategories } from "@/lib/repository";
 import { UserMenu } from "@/components/user-menu";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
+import type { Category } from "@/lib/sample-data";
 
 export async function Header() {
   const categories = await getCategories();
+  const typedCategories = categories as Category[];
   const isAdmin = await isAdminAuthenticated();
 
   return (
@@ -26,7 +28,7 @@ export async function Header() {
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex">
-          {categories.map((category) => (
+          {typedCategories.map((category: Category) => (
             <Link
               key={category.slug}
               href={`/category/${category.slug}`}

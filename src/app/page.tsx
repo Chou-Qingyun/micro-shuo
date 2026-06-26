@@ -4,6 +4,7 @@ import { AdSlot } from "@/components/ad-slot";
 import { NovelCard } from "@/components/novel-card";
 import { SubscribeForm } from "@/components/subscribe-form";
 import { getCategories, getFeaturedNovels, getLatestNovels } from "@/lib/repository";
+import type { Category, Novel } from "@/lib/sample-data";
 
 export default async function Home() {
   const [categories, featuredNovels, latestNovels] = await Promise.all([
@@ -11,6 +12,9 @@ export default async function Home() {
     getFeaturedNovels(),
     getLatestNovels(),
   ]);
+  const typedCategories = categories as Category[];
+  const typedFeaturedNovels = featuredNovels as Novel[];
+  const typedLatestNovels = latestNovels as Novel[];
 
   return (
     <>
@@ -38,7 +42,7 @@ export default async function Home() {
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
-                href={`/novels/${featuredNovels[0]?.slug}`}
+                href={`/novels/${typedFeaturedNovels[0]?.slug}`}
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-[8px] bg-[#9b405e] px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#81324c]"
               >
                 <BookOpen size={18} aria-hidden="true" />
@@ -61,13 +65,13 @@ export default async function Home() {
                 Editor Pick
               </div>
               <h2 className="mt-5 font-serif text-4xl font-semibold text-[#281f2d]">
-                {featuredNovels[0]?.title}
+                {typedFeaturedNovels[0]?.title}
               </h2>
               <p className="mt-4 text-base leading-7 text-[#5f515f]">
-                {featuredNovels[0]?.description}
+                {typedFeaturedNovels[0]?.description}
               </p>
               <Link
-                href={`/novels/${featuredNovels[0]?.slug}`}
+                href={`/novels/${typedFeaturedNovels[0]?.slug}`}
                 className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#9b405e]"
               >
                 Read the first chapter
@@ -91,7 +95,7 @@ export default async function Home() {
           </div>
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {categories.map((category) => (
+          {typedCategories.map((category: Category) => (
             <Link
               key={category.slug}
               href={`/category/${category.slug}`}
@@ -120,7 +124,7 @@ export default async function Home() {
           </Link>
         </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {featuredNovels.map((novel, index) => (
+          {typedFeaturedNovels.map((novel: Novel, index: number) => (
             <NovelCard key={novel.slug} novel={novel} priority={index === 0} />
           ))}
         </div>
@@ -137,7 +141,7 @@ export default async function Home() {
             </h2>
           </div>
           <div className="grid gap-3">
-            {latestNovels.map((novel) => (
+            {typedLatestNovels.map((novel: Novel) => (
               <Link
                 key={novel.slug}
                 href={`/novels/${novel.slug}`}
