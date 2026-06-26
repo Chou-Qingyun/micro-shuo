@@ -22,8 +22,7 @@ export default function LoginPage() {
           Keep every chapter close.
         </h1>
         <p className="mt-5 text-lg leading-8 text-[#5f515f]">
-          Save favorites, continue reading, and join chapter comments when
-          Supabase Auth is connected.
+          Save favorites, continue reading, and join chapter comments when logged in.
         </p>
       </section>
       <section className="rounded-[8px] border border-rose-100 bg-white p-6 shadow-[0_24px_70px_rgba(75,43,58,0.12)]">
