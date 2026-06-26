@@ -1,4 +1,4 @@
-import { Prisma, NovelStatus } from "@prisma/client";
+import { NovelStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import type { Chapter, Novel } from "@/lib/sample-data";
 
@@ -10,6 +10,7 @@ export type ChapterInput = Omit<Chapter, "chapterNumber" | "content"> & {
   chapterNumber?: number;
   content: string | string[];
 };
+type NovelTagTransaction = Pick<typeof prisma, "novelTag" | "tag">;
 
 export function today() {
   return new Date().toISOString().slice(0, 10);
@@ -39,7 +40,7 @@ function toNovelStatus(status: NovelInput["status"]) {
   return status === "Completed" ? NovelStatus.COMPLETED : NovelStatus.ONGOING;
 }
 
-async function upsertNovelTags(transaction: Prisma.TransactionClient, novelId: string, tags: string[]) {
+async function upsertNovelTags(transaction: NovelTagTransaction, novelId: string, tags: string[]) {
   await transaction.novelTag.deleteMany({
     where: { novelId },
   });
