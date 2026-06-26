@@ -1,0 +1,185 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// 小说连载状态，便于详情页和分类页筛选展示。
+enum NovelStatus {
+  ONGOING
+  COMPLETED
+  HIATUS
+}
+
+// 评论需要审核状态，避免垃圾评论影响 AdSense 和 SEO 质量。
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id              String            @id @default(cuid())
+  email           String            @unique
+  displayName     String?
+  avatarUrl       String?
+  lastLoginIp     String?
+  lastLoginAt     DateTime?
+  createdAt       DateTime          @default(now())
+  bookmarks       Bookmark[]
+  readingProgress ReadingProgress[]
+  comments        Comment[]
+  loginEvents     UserLoginEvent[]
+}
+
+model UserLoginEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  ipAddress String?
+  userAgent String?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([ipAddress])
+}
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  username     String    @unique
+  passwordHash String
+  displayName  String?
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String
+  tone        String   @default("")
+  novels      Novel[]
+  createdAt   DateTime @default(now())
+}
+
+model Novel {
+  id             String            @id @default(cuid())
+  title          String
+  slug           String            @unique
+  originalTitle  String?
+  author         String
+  excerpt        String
+  description    String
+  coverUrl       String
+  status         NovelStatus       @default(ONGOING)
+  categoryId     String
+  category       Category          @relation(fields: [categoryId], references: [id])
+  tags           NovelTag[]
+  chapters       Chapter[]
+  bookmarks      Bookmark[]
+  readingRecords ReadingProgress[]
+  comments       Comment[]
+  seoTitle       String?
+  seoDescription String?
+  publishedAt    DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@index([categoryId, updatedAt])
+  @@index([slug])
+}
+
+model Chapter {
+  id             String            @id @default(cuid())
+  novelId        String
+  novel          Novel             @relation(fields: [novelId], references: [id], onDelete: Cascade)
+  title          String
+  slug           String
+  chapterNumber  Int
+  content        String
+  isFree         Boolean           @default(true)
+  wordCount      Int               @default(0)
+  seoTitle       String?
+  seoDescription String?
+  comments       Comment[]
+  readingRecords ReadingProgress[]
+  publishedAt    DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@unique([novelId, slug])
+  @@unique([novelId, chapterNumber])
+  @@index([publishedAt])
+}
+
+model Tag {
+  id     String     @id @default(cuid())
+  name   String
+  slug   String     @unique
+  novels NovelTag[]
+}
+
+model NovelTag {
+  novelId String
+  tagId   String
+  novel   Novel  @relation(fields: [novelId], references: [id], onDelete: Cascade)
+  tag     Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([novelId, tagId])
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  novelId   String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  novel     Novel    @relation(fields: [novelId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, novelId])
+}
+
+model ReadingProgress {
+  id        String   @id @default(cuid())
+  userId    String
+  novelId   String
+  chapterId String
+  progress  Int      @default(0)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  novel     Novel    @relation(fields: [novelId], references: [id], onDelete: Cascade)
+  chapter   Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, novelId])
+}
+
+model Comment {
+  id        String        @id @default(cuid())
+  body      String
+  status    CommentStatus @default(PENDING)
+  userId    String?
+  novelId   String
+  chapterId String?
+  parentId  String?
+  user      User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  novel     Novel         @relation(fields: [novelId], references: [id], onDelete: Cascade)
+  chapter   Chapter?      @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  parent    Comment?      @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[]     @relation("CommentReplies")
+  createdAt DateTime      @default(now())
+
+  @@index([novelId, chapterId, status])
+}
+
+model Subscription {
+  id        String   @id @default(cuid())
+  email     String
+  source    String   @default("site")
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@unique([email, source])
+}

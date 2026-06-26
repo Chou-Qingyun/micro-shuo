@@ -1,0 +1,231 @@
+export type Category = {
+  name: string;
+  slug: string;
+  description: string;
+  tone: string;
+};
+
+export type Chapter = {
+  title: string;
+  slug: string;
+  chapterNumber: number;
+  publishedAt: string;
+  content: string[];
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+};
+
+export type Novel = {
+  title: string;
+  slug: string;
+  author: string;
+  categorySlug: string;
+  coverUrl: string;
+  status: "Ongoing" | "Completed";
+  tags: string[];
+  excerpt: string;
+  description: string;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  updatedAt: string;
+  chapters: Chapter[];
+};
+
+export const categories: Category[] = [
+  {
+    name: "CEO Romance",
+    slug: "ceo-romance",
+    description:
+      "Powerful CEOs, tender confessions, Cinderella turns, and slow-burn protection.",
+    tone: "Velvet city nights, contract marriage sparks, and soft luxury healing.",
+  },
+  {
+    name: "Transmigration Sweet Romance",
+    slug: "transmigration-sweet-romance",
+    description:
+      "Modern heroines step into another life and rewrite fate with wit and sweetness.",
+    tone: "Fate-reset stories with bright humor, courtly tension, and a warm ending.",
+  },
+  {
+    name: "Rebirth Sweet Romance",
+    slug: "rebirth-sweet-romance",
+    description:
+      "A second chance to love better, choose bravely, and turn regret into tenderness.",
+    tone: "Revenge lightly held, devotion deeply felt, and every chapter a reset.",
+  },
+  {
+    name: "Campus Sweet Romance",
+    slug: "campus-sweet-romance",
+    description:
+      "Youthful crushes, study notes, rainy walks, and the first heartbeat of love.",
+    tone: "Clean, soft, youthful romance for readers who love gentle emotional payoff.",
+  },
+];
+
+export const novels: Novel[] = [
+  {
+    title: "When the CEO Chose Her",
+    slug: "when-the-ceo-chose-her",
+    author: "Luna Wen",
+    categorySlug: "ceo-romance",
+    coverUrl:
+      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80",
+    status: "Ongoing",
+    tags: ["Billionaire", "Cinderella", "Contract Marriage", "Slow Burn"],
+    excerpt:
+      "A quiet florist signs a temporary contract with the coldest CEO in the city, only to become the one person he refuses to let go.",
+    description:
+      "Mira Lin never expected a bouquet delivery to change her life. Adrian Xu needed a bride for one season, not a woman who could read the loneliness behind his tailored suits. Their agreement is simple, public, and temporary. Their feelings are not.",
+    updatedAt: "2026-06-23",
+    chapters: [
+      {
+        title: "A Bouquet for the Penthouse",
+        slug: "chapter-1-a-bouquet-for-the-penthouse",
+        chapterNumber: 1,
+        publishedAt: "2026-06-20",
+        content: [
+          "Mira Lin balanced the ivory bouquet against her chest and stepped into the marble lobby as if she had walked into a jewelry box.",
+          "The receptionist looked up, measured her cotton dress, and softened when she saw the delivery card. Penthouse. Private elevator. No photos.",
+          "On the top floor, Adrian Xu stood beside a wall of glass, the city folded beneath him like a silk scarf. He did not turn when she entered.",
+          "\"Leave them there,\" he said. His voice was calm, expensive, and lonely in a way Mira did not expect.",
+          "She placed the flowers on the table. A silver ring box sat beside them, open and empty, as if someone had already changed their mind.",
+          "When Mira moved to leave, the elevator doors stayed closed. Adrian finally looked at her, and the room seemed to gather itself around that gaze.",
+          "\"Miss Lin,\" he said, reading the name on her badge. \"Do you believe two strangers can help each other for one season?\"",
+        ],
+      },
+      {
+        title: "The Contract Written in Rose Gold",
+        slug: "chapter-2-the-contract-written-in-rose-gold",
+        chapterNumber: 2,
+        publishedAt: "2026-06-21",
+        content: [
+          "The contract was only twelve pages, but Mira felt as if it carried the weight of every door she had never been allowed to open.",
+          "Adrian did not rush her. He poured warm tea, pushed the cup across the table, and waited with the patience of a man used to owning time.",
+          "The terms were clear: three months, public appearances, no private interference. Enough money to save her flower shop. Enough distance to protect them both.",
+          "Mira tapped the pen once. \"And if people ask why you chose me?\"",
+          "For the first time, Adrian smiled. It was brief, dangerous, and almost tender.",
+          "\"I will tell them the truth,\" he said. \"You were the only person in this building who looked at me like I was human.\"",
+        ],
+      },
+      {
+        title: "His Coat in the Rain",
+        slug: "chapter-3-his-coat-in-the-rain",
+        chapterNumber: 3,
+        publishedAt: "2026-06-23",
+        content: [
+          "The first rumor arrived before the first dinner. Mira saw her name beside Adrian's in a headline and nearly dropped her phone into a bucket of tulips.",
+          "By evening, reporters crowded outside the restaurant. Rain silvered the pavement. Camera flashes stitched the air.",
+          "Adrian stepped from the car and removed his coat before Mira could protest. He placed it over her shoulders with the precision of a promise.",
+          "\"Look at me,\" he murmured.",
+          "She did. The noise thinned. The rain softened. In his eyes, the city no longer felt impossible.",
+          "Their hands touched for the cameras, but Adrian's thumb brushed her wrist only when no one else could see.",
+        ],
+      },
+    ],
+  },
+  {
+    title: "Reborn as His Gentle Moon",
+    slug: "reborn-as-his-gentle-moon",
+    author: "Aster Qiao",
+    categorySlug: "rebirth-sweet-romance",
+    coverUrl:
+      "https://images.unsplash.com/photo-1496062031456-07b8f162a322?auto=format&fit=crop&w=900&q=80",
+    status: "Ongoing",
+    tags: ["Second Chance", "Devoted Male Lead", "Family Revenge"],
+    excerpt:
+      "After losing everything, she wakes up three years earlier and chooses the man who silently protected her all along.",
+    description:
+      "Evelyn Shen remembers the betrayal, the cold hospital lights, and the hand she never reached for. Now time has given her one gentle chance. This life, she will protect her name, her heart, and the quiet heir who loved her before she knew how to love herself.",
+    updatedAt: "2026-06-22",
+    chapters: [
+      {
+        title: "The Morning Before Regret",
+        slug: "chapter-1-the-morning-before-regret",
+        chapterNumber: 1,
+        publishedAt: "2026-06-19",
+        content: [
+          "Evelyn woke to sunlight on her old bedroom curtains and the impossible sound of her mother humming downstairs.",
+          "Her hands trembled. The scar on her wrist was gone. The wedding invitation on her desk still bore the name of the man who would betray her.",
+          "She laughed once, softly, and cried before the sound could become joy.",
+          "This time she would not chase applause. This time she would answer the message she had ignored for three years.",
+          "On her phone, Nathan Lu had written only one line: If you need help, I am here.",
+        ],
+      },
+      {
+        title: "A Different Answer",
+        slug: "chapter-2-a-different-answer",
+        chapterNumber: 2,
+        publishedAt: "2026-06-22",
+        content: [
+          "Nathan arrived in a pale gray coat, his expression composed until he saw Evelyn waiting at the gate.",
+          "\"You called,\" he said.",
+          "In her last life, she had thought him cold. Now she recognized restraint, the careful kindness of someone afraid to ask for too much.",
+          "Evelyn stepped forward and placed the unopened invitation in his hand.",
+          "\"Help me cancel a wedding,\" she said. \"Then help me become someone no one can use again.\"",
+        ],
+      },
+    ],
+  },
+  {
+    title: "I Transmigrated Into the Villain's Favorite Wife",
+    slug: "villains-favorite-wife",
+    author: "Mei Rowan",
+    categorySlug: "transmigration-sweet-romance",
+    coverUrl:
+      "https://images.unsplash.com/photo-1504198266287-1659872e6590?auto=format&fit=crop&w=900&q=80",
+    status: "Completed",
+    tags: ["Transmigration", "Villain Husband", "Comedy", "Sweet Daily Life"],
+    excerpt:
+      "She wakes inside a novel as the doomed wife of the villain, then survives by making him breakfast and refusing to follow the plot.",
+    description:
+      "Nora Gu knows the story: the villain falls, the wife dies, and the heroine gets the final chapter. Unfortunately, she has become the wife. Her survival plan is practical: cook well, avoid drama, and convince the villain that peaceful domestic life is better than revenge.",
+    updatedAt: "2026-06-18",
+    chapters: [
+      {
+        title: "Wrong Novel, Right Kitchen",
+        slug: "chapter-1-wrong-novel-right-kitchen",
+        chapterNumber: 1,
+        publishedAt: "2026-06-16",
+        content: [
+          "Nora opened her eyes to carved sandalwood beams, silk bedding, and a maid asking whether Madam preferred bird's nest soup or divorce papers.",
+          "She sat up slowly.",
+          "\"Soup,\" she said. \"Always soup before paperwork.\"",
+          "Across the room, the villain of the novel watched from behind a folding screen, his black robe loose at the collar and his expression unreadable.",
+          "Nora remembered his ending. Poison, betrayal, snow.",
+          "She also remembered that he had a weakness the original author mentioned only once: he never skipped breakfast.",
+        ],
+      },
+    ],
+  },
+  {
+    title: "Notes From the Boy Beside Me",
+    slug: "notes-from-the-boy-beside-me",
+    author: "June Xia",
+    categorySlug: "campus-sweet-romance",
+    coverUrl:
+      "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=900&q=80",
+    status: "Ongoing",
+    tags: ["Campus", "First Love", "Study Partners", "Soft Healing"],
+    excerpt:
+      "A transfer student and the top-ranked boy exchange study notes, tiny secrets, and the kind of tenderness that grows quietly.",
+    description:
+      "Sophie Han only wants to survive a new school without being noticed. Leo Cheng, the top student with unreadable eyes, notices the margin notes in her textbook instead. Between exams, rainy bus stops, and handwritten encouragement, first love arrives without asking permission.",
+    updatedAt: "2026-06-21",
+    chapters: [
+      {
+        title: "The Seat by the Window",
+        slug: "chapter-1-the-seat-by-the-window",
+        chapterNumber: 1,
+        publishedAt: "2026-06-21",
+        content: [
+          "Sophie chose the empty seat by the window because it looked safe. Ten minutes later, the safest seat in class became the most noticeable one.",
+          "Leo Cheng placed a notebook on the desk beside hers. His handwriting was neat enough to look printed.",
+          "\"You missed page thirty-two,\" he said without looking at her.",
+          "Sophie blinked. \"How do you know?\"",
+          "He turned one page in his own book. A small smile hid at the corner of his mouth.",
+          "\"You looked betrayed by calculus. It was easy to tell.\"",
+        ],
+      },
+    ],
+  },
+];

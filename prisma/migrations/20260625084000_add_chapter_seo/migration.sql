@@ -1,0 +1,2 @@
+ALTER TABLE "Chapter" ADD COLUMN IF NOT EXISTS "seoTitle" TEXT;
+ALTER TABLE "Chapter" ADD COLUMN IF NOT EXISTS "seoDescription" TEXT;
