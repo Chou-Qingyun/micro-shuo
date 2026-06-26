@@ -21,7 +21,7 @@ function getString(formData: FormData, key: string) {
 function getTags(formData: FormData) {
   return getString(formData, "tags")
     .split(",")
-    .map((tag) => tag.trim())
+    .map((tag: string) => tag.trim())
     .filter(Boolean);
 }
 

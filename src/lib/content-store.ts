@@ -12,6 +12,16 @@ export type ChapterInput = Omit<Chapter, "chapterNumber" | "content"> & {
 type NovelTagTransaction = Pick<typeof prisma, "novelTag" | "tag">;
 type ContentTransaction = Pick<typeof prisma, "category" | "novel" | "novelTag" | "tag">;
 type DbNovelStatus = "ONGOING" | "COMPLETED";
+type StoredChapterSummary = {
+  id: string;
+  slug: string;
+  chapterNumber: number;
+  publishedAt: Date;
+};
+type StoredNovelWithChapters = {
+  id: string;
+  chapters: StoredChapterSummary[];
+};
 
 export function today() {
   return new Date().toISOString().slice(0, 10);
@@ -28,12 +38,12 @@ export function slugify(value: string) {
 
 export function normalizeContent(content: string | string[]) {
   if (Array.isArray(content)) {
-    return content.filter(Boolean);
+    return content.filter((paragraph: string) => Boolean(paragraph));
   }
 
   return content
     .split(/\n{2,}/)
-    .map((paragraph) => paragraph.trim())
+    .map((paragraph: string) => paragraph.trim())
     .filter(Boolean);
 }
 
@@ -46,7 +56,7 @@ async function upsertNovelTags(transaction: NovelTagTransaction, novelId: string
     where: { novelId },
   });
 
-  for (const tagName of tags.map((tag) => tag.trim()).filter(Boolean)) {
+  for (const tagName of tags.map((tag: string) => tag.trim()).filter(Boolean)) {
     const tagSlug = slugify(tagName);
 
     if (!tagSlug) continue;
@@ -73,7 +83,7 @@ export async function createNovel(input: NovelInput) {
     throw new Error("小说 slug 不能为空");
   }
 
-  const tags = input.tags.map((tag) => tag.trim()).filter(Boolean);
+  const tags = input.tags.map((tag: string) => tag.trim()).filter(Boolean);
 
   return prisma.$transaction(async (transaction: ContentTransaction) => {
     const category = await transaction.category.findUnique({
@@ -126,7 +136,7 @@ export async function updateNovel(slug: string, input: NovelInput) {
     throw new Error("未找到要编辑的小说");
   }
 
-  const tags = input.tags.map((tag) => tag.trim()).filter(Boolean);
+  const tags = input.tags.map((tag: string) => tag.trim()).filter(Boolean);
 
   return prisma.$transaction(async (transaction: ContentTransaction) => {
     const category = await transaction.category.findUnique({
@@ -181,9 +191,13 @@ export async function createChapter(novelSlug: string, input: ChapterInput) {
     throw new Error("未找到小说");
   }
 
+  const typedNovel = novel as StoredNovelWithChapters;
   const chapterNumber =
     input.chapterNumber ||
-    Math.max(0, ...novel.chapters.map((chapter) => chapter.chapterNumber)) + 1;
+    Math.max(
+      0,
+      ...typedNovel.chapters.map((chapter: StoredChapterSummary) => chapter.chapterNumber),
+    ) + 1;
   const slug = slugify(input.slug || `chapter-${chapterNumber}-${input.title}`);
 
   const paragraphs = normalizeContent(input.content);
@@ -191,7 +205,7 @@ export async function createChapter(novelSlug: string, input: ChapterInput) {
 
   const chapter = await prisma.chapter.create({
     data: {
-      novelId: novel.id,
+      novelId: typedNovel.id,
       title: input.title,
       slug,
       chapterNumber,
@@ -224,7 +238,10 @@ export async function updateChapter(novelSlug: string, chapterSlug: string, inpu
     throw new Error("未找到小说");
   }
 
-  const current = novel.chapters.find((chapter) => chapter.slug === chapterSlug);
+  const typedNovel = novel as StoredNovelWithChapters;
+  const current = typedNovel.chapters.find(
+    (chapter: StoredChapterSummary) => chapter.slug === chapterSlug,
+  );
 
   if (!current) {
     throw new Error("未找到章节");
