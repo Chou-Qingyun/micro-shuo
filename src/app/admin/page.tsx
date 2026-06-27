@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BookOpenText, Layers3, MessageCircle, PlusCircle } from "lucide-react";
+import { Bell, BookOpenText, Layers3, MessageCircle, PlusCircle } from "lucide-react";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { getCategories, getLatestNovels } from "@/lib/repository";
+import { prisma } from "@/lib/prisma";
 import type { Category, Novel } from "@/lib/sample-data";
 
 export const metadata: Metadata = {
@@ -12,7 +13,17 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
-  const [categories, novels] = await Promise.all([getCategories(), getLatestNovels()]);
+  const [categories, novels, subscriptionCount] = await Promise.all([
+    getCategories(),
+    getLatestNovels(),
+    prisma.subscription.count({
+      where: {
+        source: {
+          startsWith: "novel:",
+        },
+      },
+    }),
+  ]);
   const typedCategories = categories as Category[];
   const typedNovels = novels as Novel[];
   const chapterCount = typedNovels.reduce(
@@ -22,11 +33,12 @@ export default async function AdminDashboardPage() {
 
   return (
     <AdminShell title="数据概览" description="查看当前小说内容数量，并快速进入常用管理操作。">
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         {[
           { label: "小说总数", value: typedNovels.length, icon: BookOpenText },
           { label: "章节总数", value: chapterCount, icon: Layers3 },
           { label: "分类数量", value: typedCategories.length, icon: MessageCircle },
+          { label: "小说订阅", value: subscriptionCount, icon: Bell },
         ].map((item: { label: string; value: number; icon: typeof BookOpenText }) => (
           <div key={item.label} className="rounded-[8px] border border-rose-100 bg-white p-5 shadow-sm">
             <item.icon className="text-[#9b405e]" size={22} aria-hidden="true" />
@@ -48,6 +60,13 @@ export default async function AdminDashboardPage() {
           >
             <PlusCircle size={16} aria-hidden="true" />
             新增小说
+          </Link>
+          <Link
+            href="/admin/subscriptions"
+            className="inline-flex h-10 items-center gap-2 rounded-[8px] border border-rose-100 bg-white px-4 text-sm font-semibold text-[#3a303c]"
+          >
+            <Bell size={16} aria-hidden="true" />
+            订阅管理
           </Link>
         </div>
         <div className="mt-5 divide-y divide-rose-50">

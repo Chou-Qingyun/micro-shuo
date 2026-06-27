@@ -36,6 +36,7 @@ export function UserMenu({ isAdmin = false }: { isAdmin?: boolean }) {
       if (!mounted) return;
 
       if (!response.ok) {
+        await supabase?.auth.signOut();
         setProfile(null);
         return;
       }
@@ -125,4 +126,3 @@ export function UserMenu({ isAdmin = false }: { isAdmin?: boolean }) {
     </div>
   );
 }
-

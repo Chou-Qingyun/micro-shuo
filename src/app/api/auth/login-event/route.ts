@@ -1,16 +1,21 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getClientIp } from "@/lib/request-ip";
+import { getClientCountryCode, getClientIp } from "@/lib/request-ip";
 import { getAuthenticatedUser } from "@/lib/user-auth";
 
 export async function POST(request: Request) {
-  const user = await getAuthenticatedUser(request);
+  const user = await getAuthenticatedUser(request, { allowBlocked: true });
 
   if (!user) {
     return NextResponse.json({ message: "Please sign in first." }, { status: 401 });
   }
 
+  if (user.isLoginBlocked) {
+    return NextResponse.json({ message: "Your account is blocked." }, { status: 403 });
+  }
+
   const ipAddress = getClientIp(request);
+  const country = getClientCountryCode(request);
   const userAgent = request.headers.get("user-agent")?.slice(0, 512) || null;
   const loggedAt = new Date();
 
@@ -20,6 +25,7 @@ export async function POST(request: Request) {
       where: { id: user.id },
       data: {
         lastLoginIp: ipAddress,
+        lastLoginCountry: country,
         lastLoginAt: loggedAt,
       },
     }),
@@ -27,6 +33,7 @@ export async function POST(request: Request) {
       data: {
         userId: user.id,
         ipAddress,
+        country,
         userAgent,
         createdAt: loggedAt,
       },
@@ -36,6 +43,7 @@ export async function POST(request: Request) {
   return NextResponse.json({
     ok: true,
     lastLoginIp: ipAddress,
+    lastLoginCountry: country,
     lastLoginAt: loggedAt.toISOString(),
   });
 }

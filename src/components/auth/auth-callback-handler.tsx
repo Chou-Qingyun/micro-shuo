@@ -5,14 +5,25 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 async function recordLoginEvent(token?: string) {
-  if (!token) return;
+  if (!token) return { ok: false, message: "" };
 
-  await fetch("/api/auth/login-event", {
+  const response = await fetch("/api/auth/login-event", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
     },
   }).catch(() => null);
+
+  if (!response) {
+    return { ok: false, message: "" };
+  }
+
+  if (!response.ok) {
+    const result = (await response.json().catch(() => null)) as { message?: string } | null;
+    return { ok: false, message: result?.message ?? "" };
+  }
+
+  return { ok: true, message: "" };
 }
 
 export function AuthCallbackHandler() {
@@ -71,7 +82,13 @@ export function AuthCallbackHandler() {
           Authorization: `Bearer ${token}`,
         },
       });
-      await recordLoginEvent(token);
+      const loginEvent = await recordLoginEvent(token);
+
+      if (!loginEvent.ok && loginEvent.message) {
+        await supabase.auth.signOut();
+        setMessage(loginEvent.message);
+        return;
+      }
 
       router.replace(next);
       router.refresh();

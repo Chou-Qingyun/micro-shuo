@@ -1,6 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
 import { prisma } from "@/lib/prisma";
 
+type AuthOptions = {
+  allowBlocked?: boolean;
+};
+
 function getSupabaseServerClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -27,7 +31,7 @@ export function getBearerToken(request: Request) {
   return authorization.slice("Bearer ".length).trim();
 }
 
-export async function getAuthenticatedUser(request: Request) {
+export async function getAuthenticatedUser(request: Request, options: AuthOptions = {}) {
   const token = getBearerToken(request);
 
   if (!token) {
@@ -42,7 +46,7 @@ export async function getAuthenticatedUser(request: Request) {
   }
 
   // Supabase Auth 负责登录态，我们自己的 User 表负责业务数据关联。
-  return prisma.user.upsert({
+  const user = await prisma.user.upsert({
     where: { email: data.user.email },
     update: {
       avatarUrl: data.user.user_metadata?.avatar_url ?? undefined,
@@ -57,4 +61,10 @@ export async function getAuthenticatedUser(request: Request) {
       avatarUrl: data.user.user_metadata?.avatar_url ?? null,
     },
   });
+
+  if (user.isLoginBlocked && !options.allowBlocked) {
+    return null;
+  }
+
+  return user;
 }

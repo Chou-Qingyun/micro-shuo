@@ -21,23 +21,28 @@ enum CommentStatus {
 }
 
 model User {
-  id              String            @id @default(cuid())
-  email           String            @unique
-  displayName     String?
-  avatarUrl       String?
-  lastLoginIp     String?
-  lastLoginAt     DateTime?
-  createdAt       DateTime          @default(now())
-  bookmarks       Bookmark[]
-  readingProgress ReadingProgress[]
-  comments        Comment[]
-  loginEvents     UserLoginEvent[]
+  id               String            @id @default(cuid())
+  email            String            @unique
+  displayName      String?
+  avatarUrl        String?
+  lastLoginIp      String?
+  lastLoginCountry String?
+  lastLoginAt      DateTime?
+  isLoginBlocked   Boolean           @default(false)
+  createdAt        DateTime          @default(now())
+  bookmarks        Bookmark[]
+  readingProgress  ReadingProgress[]
+  comments         Comment[]
+  loginEvents      UserLoginEvent[]
+
+  @@index([isLoginBlocked])
 }
 
 model UserLoginEvent {
   id        String   @id @default(cuid())
   userId    String
   ipAddress String?
+  country   String?
   userAgent String?
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
@@ -180,6 +185,6 @@ model Subscription {
   source    String   @default("site")
   createdAt DateTime @default(now())
 
-  @@index([email])
   @@unique([email, source])
+  @@index([email])
 }

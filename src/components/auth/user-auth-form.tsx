@@ -8,14 +8,25 @@ import { supabase } from "@/lib/supabase";
 type AuthMode = "login" | "signup";
 
 async function recordLoginEvent(token?: string) {
-  if (!token) return;
+  if (!token) return { ok: false, message: "" };
 
-  await fetch("/api/auth/login-event", {
+  const response = await fetch("/api/auth/login-event", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
     },
   }).catch(() => null);
+
+  if (!response) {
+    return { ok: false, message: "" };
+  }
+
+  if (!response.ok) {
+    const result = (await response.json().catch(() => null)) as { message?: string } | null;
+    return { ok: false, message: result?.message ?? "" };
+  }
+
+  return { ok: true, message: "" };
 }
 
 export function UserAuthForm() {
@@ -44,6 +55,23 @@ export function UserAuthForm() {
       const { data } = await supabase.auth.getSession();
 
       if (!mounted) return;
+
+      const token = data.session?.access_token;
+
+      if (!token) {
+        setCurrentEmail("");
+        return;
+      }
+
+      const response = await fetch("/api/auth/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) {
+        await supabase.auth.signOut();
+        setCurrentEmail("");
+        return;
+      }
 
       setCurrentEmail(data.session?.user.email ?? "");
     }
@@ -133,7 +161,13 @@ export function UserAuthForm() {
       return;
     }
 
-    await recordLoginEvent(response.data.session?.access_token);
+    const loginEvent = await recordLoginEvent(response.data.session?.access_token);
+
+    if (!loginEvent.ok && loginEvent.message) {
+      await supabase.auth.signOut();
+      setMessage(loginEvent.message);
+      return;
+    }
 
     setMessage("Signed in.");
     router.push(next);

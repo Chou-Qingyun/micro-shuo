@@ -2,10 +2,14 @@ import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/user-auth";
 
 export async function GET(request: Request) {
-  const user = await getAuthenticatedUser(request);
+  const user = await getAuthenticatedUser(request, { allowBlocked: true });
 
   if (!user) {
     return NextResponse.json({ user: null }, { status: 401 });
+  }
+
+  if (user.isLoginBlocked) {
+    return NextResponse.json({ message: "Your account is blocked." }, { status: 403 });
   }
 
   return NextResponse.json({
@@ -17,4 +21,3 @@ export async function GET(request: Request) {
     },
   });
 }
-

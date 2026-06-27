@@ -1,5 +1,13 @@
 import Link from "next/link";
-import { BookOpenText, LayoutDashboard, LogOut, MessageCircle, PlusCircle } from "lucide-react";
+import {
+  Bell,
+  BookOpenText,
+  LayoutDashboard,
+  LogOut,
+  MessageCircle,
+  PlusCircle,
+  UsersRound,
+} from "lucide-react";
 import { logoutAction } from "@/app/admin/actions";
 
 export function AdminShell({
@@ -48,6 +56,20 @@ export function AdminShell({
             >
               <MessageCircle size={17} aria-hidden="true" />
               评论管理
+            </Link>
+            <Link
+              href="/admin/users"
+              className="inline-flex items-center gap-2 rounded-[8px] px-3 py-2 text-sm font-semibold text-[#3a303c] hover:bg-[#f8f1ee]"
+            >
+              <UsersRound size={17} aria-hidden="true" />
+              用户管理
+            </Link>
+            <Link
+              href="/admin/subscriptions"
+              className="inline-flex items-center gap-2 rounded-[8px] px-3 py-2 text-sm font-semibold text-[#3a303c] hover:bg-[#f8f1ee]"
+            >
+              <Bell size={17} aria-hidden="true" />
+              订阅管理
             </Link>
           </nav>
           <form action={logoutAction} className="mt-5 border-t border-rose-50 pt-4">

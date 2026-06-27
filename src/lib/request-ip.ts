@@ -33,3 +33,23 @@ export function getClientIp(request: Request) {
 
   return null;
 }
+
+export function getClientCountryCode(request: Request) {
+  // Vercel 和 Cloudflare 会在边缘节点注入国家/地区代码，本地开发时通常为空。
+  const headerNames = [
+    "x-vercel-ip-country",
+    "cf-ipcountry",
+    "cloudfront-viewer-country",
+    "x-country-code",
+  ];
+
+  for (const headerName of headerNames) {
+    const value = request.headers.get(headerName)?.trim().toUpperCase();
+
+    if (value && /^[A-Z]{2}$/.test(value) && value !== "XX") {
+      return value;
+    }
+  }
+
+  return null;
+}

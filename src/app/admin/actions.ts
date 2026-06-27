@@ -13,6 +13,7 @@ import {
   updateNovel,
 } from "@/lib/content-store";
 import { prisma } from "@/lib/prisma";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 
 function getString(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
@@ -213,4 +214,58 @@ export async function deleteCommentAction(formData: FormData) {
 
   revalidateCommentPaths(comment.novel.slug, comment.chapter?.slug);
   redirect("/admin/comments?updated=deleted");
+}
+
+export async function blockUserLoginAction(formData: FormData) {
+  const userId = getString(formData, "userId");
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { isLoginBlocked: true },
+  });
+
+  revalidatePath("/admin/users");
+  redirect("/admin/users?updated=blocked");
+}
+
+export async function allowUserLoginAction(formData: FormData) {
+  const userId = getString(formData, "userId");
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { isLoginBlocked: false },
+  });
+
+  revalidatePath("/admin/users");
+  redirect("/admin/users?updated=allowed");
+}
+
+export async function deleteUserAction(formData: FormData) {
+  const userId = getString(formData, "userId");
+
+  if (!supabaseAdmin) {
+    redirect("/admin/users?updated=missing-service-role");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true },
+  });
+
+  if (!user) {
+    redirect("/admin/users?updated=missing");
+  }
+
+  const { error } = await supabaseAdmin.auth.admin.deleteUser(user.id);
+
+  if (error) {
+    redirect("/admin/users?updated=delete-auth-failed");
+  }
+
+  await prisma.user.delete({
+    where: { id: user.id },
+  });
+
+  revalidatePath("/admin/users");
+  redirect("/admin/users?updated=deleted");
 }
