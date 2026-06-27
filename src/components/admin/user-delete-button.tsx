@@ -26,7 +26,7 @@ export function UserDeleteButton({
 
       <dialog
         ref={dialogRef}
-        className="w-[min(92vw,420px)] rounded-[8px] border border-rose-100 bg-white p-0 text-left shadow-[0_24px_80px_rgba(75,43,58,0.22)] backdrop:bg-[#281f2d]/35"
+        className="fixed left-1/2 top-1/2 m-0 w-[min(92vw,420px)] -translate-x-1/2 -translate-y-1/2 rounded-[8px] border border-rose-100 bg-white p-0 text-left shadow-[0_24px_80px_rgba(75,43,58,0.22)] backdrop:bg-[#281f2d]/35"
       >
         <div className="p-5">
           <p className="text-lg font-semibold text-[#281f2d]">确认删除用户</p>

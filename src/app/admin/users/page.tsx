@@ -34,6 +34,9 @@ function getNotice(updated?: string) {
   if (updated === "blocked") return "用户已禁止登录。";
   if (updated === "allowed") return "用户已重新允许登录。";
   if (updated === "deleted") return "用户已物理删除。";
+  if (updated === "deleted-local-only") {
+    return "本地用户数据已删除，但 Supabase Auth 删除未完成，请检查 service role key 或在 Supabase 后台手动确认。";
+  }
   if (updated === "missing") return "用户不存在或已被删除。";
   if (updated === "missing-service-role") {
     return "删除用户需要配置 SUPABASE_SERVICE_ROLE_KEY。";

@@ -243,10 +243,6 @@ export async function allowUserLoginAction(formData: FormData) {
 export async function deleteUserAction(formData: FormData) {
   const userId = getString(formData, "userId");
 
-  if (!supabaseAdmin) {
-    redirect("/admin/users?updated=missing-service-role");
-  }
-
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { id: true },
@@ -256,10 +252,17 @@ export async function deleteUserAction(formData: FormData) {
     redirect("/admin/users?updated=missing");
   }
 
-  const { error } = await supabaseAdmin.auth.admin.deleteUser(user.id);
+  let authDeleteFailed = false;
 
-  if (error) {
-    redirect("/admin/users?updated=delete-auth-failed");
+  if (supabaseAdmin) {
+    try {
+      const { error } = await supabaseAdmin.auth.admin.deleteUser(user.id);
+      authDeleteFailed = Boolean(error);
+    } catch {
+      authDeleteFailed = true;
+    }
+  } else {
+    authDeleteFailed = true;
   }
 
   await prisma.user.delete({
@@ -267,5 +270,5 @@ export async function deleteUserAction(formData: FormData) {
   });
 
   revalidatePath("/admin/users");
-  redirect("/admin/users?updated=deleted");
+  redirect(authDeleteFailed ? "/admin/users?updated=deleted-local-only" : "/admin/users?updated=deleted");
 }
