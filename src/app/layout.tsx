@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Inter } from "next/font/google";
-import { Analytics } from "@vercel/analytics/next";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
+import { VercelInsights } from "@/components/vercel-insights";
 import { siteConfig } from "@/lib/site";
 import "./globals.css";
 
@@ -46,7 +46,7 @@ export default function RootLayout({
         <Header />
         <main className="soft-page flex-1">{children}</main>
         <Footer />
-        <Analytics />
+        <VercelInsights />
       </body>
     </html>
   );
