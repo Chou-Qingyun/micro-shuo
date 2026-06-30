@@ -1,21 +1,24 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, BookOpen, Crown, Gem, HeartHandshake, Search } from "lucide-react";
 import { AdSlot } from "@/components/ad-slot";
-import { NovelCard } from "@/components/novel-card";
+import { FeaturedNovelCarousel } from "@/components/featured-novel-carousel";
 import { SubscribeForm } from "@/components/subscribe-form";
-import { getCategories, getFeaturedNovels, getLatestNovels } from "@/lib/repository";
+import { getCategories, getFeaturedNovels, getLatestNovels, getNovels } from "@/lib/repository";
 import type { Category, Novel } from "@/lib/sample-data";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [categories, featuredNovels, latestNovels] = await Promise.all([
+  const [categories, featuredNovels, allNovels, latestNovels] = await Promise.all([
     getCategories(),
     getFeaturedNovels(),
+    getNovels(),
     getLatestNovels(),
   ]);
   const typedCategories = categories as Category[];
   const typedFeaturedNovels = featuredNovels as Novel[];
+  const typedAllNovels = allNovels as Novel[];
   const typedLatestNovels = latestNovels as Novel[];
 
   return (
@@ -61,24 +64,38 @@ export default async function Home() {
           </div>
 
           <div className="grid gap-4">
-            <div className="rounded-[8px] border border-rose-100 bg-white p-5 shadow-[0_24px_70px_rgba(75,43,58,0.12)]">
-              <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-[#9b405e]">
-                <Crown size={17} aria-hidden="true" />
-                Editor Pick
+            <div className="relative overflow-hidden rounded-[8px] border border-rose-100 bg-white p-5 shadow-[0_24px_70px_rgba(75,43,58,0.12)]">
+              {typedFeaturedNovels[0]?.coverUrl ? (
+                <Image
+                  src={typedFeaturedNovels[0].coverUrl}
+                  alt=""
+                  fill
+                  priority
+                  sizes="(min-width: 1024px) 45vw, 100vw"
+                  className="object-cover"
+                  aria-hidden="true"
+                />
+              ) : null}
+              <div className="absolute inset-0 bg-linear-to-r from-white/90 via-white/70 to-white/25" aria-hidden="true" />
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-[#9b405e]">
+                  <Crown size={17} aria-hidden="true" />
+                  Editor Pick
+                </div>
+                <h2 className="mt-5 font-serif text-4xl font-semibold text-[#281f2d]">
+                  {typedFeaturedNovels[0]?.title}
+                </h2>
+                <p className="mt-4 text-base leading-7 text-[#5f515f]">
+                  {typedFeaturedNovels[0]?.description}
+                </p>
+                <Link
+                  href={`/novels/${typedFeaturedNovels[0]?.slug}`}
+                  className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#9b405e]"
+                >
+                  Read the first chapter
+                  <ArrowRight size={16} aria-hidden="true" />
+                </Link>
               </div>
-              <h2 className="mt-5 font-serif text-4xl font-semibold text-[#281f2d]">
-                {typedFeaturedNovels[0]?.title}
-              </h2>
-              <p className="mt-4 text-base leading-7 text-[#5f515f]">
-                {typedFeaturedNovels[0]?.description}
-              </p>
-              <Link
-                href={`/novels/${typedFeaturedNovels[0]?.slug}`}
-                className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#9b405e]"
-              >
-                Read the first chapter
-                <ArrowRight size={16} aria-hidden="true" />
-              </Link>
             </div>
             <AdSlot label="Google AdSense Slot" />
           </div>
@@ -125,11 +142,7 @@ export default async function Home() {
             Browse all
           </Link>
         </div>
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {typedFeaturedNovels.map((novel: Novel, index: number) => (
-            <NovelCard key={novel.slug} novel={novel} priority={index === 0} />
-          ))}
-        </div>
+        <FeaturedNovelCarousel novels={typedAllNovels} categories={typedCategories} />
       </section>
 
       <section className="border-y border-rose-100 bg-white/70">
