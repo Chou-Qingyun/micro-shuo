@@ -12,7 +12,7 @@ type UserProfile = {
   avatarUrl: string | null;
 };
 
-export function UserMenu({ isAdmin = false }: { isAdmin?: boolean }) {
+export function UserMenu() {
   const pathname = usePathname();
   const router = useRouter();
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -65,8 +65,7 @@ export function UserMenu({ isAdmin = false }: { isAdmin?: boolean }) {
   }
 
   if (!profile) {
-    // 后台管理已登录（独立 cookie 鉴权）时，显示 Admin 入口而非 Login
-    if (isAdmin) {
+    if (pathname.startsWith("/admin")) {
       return (
         <Link
           href="/admin"

@@ -8,9 +8,10 @@ import { CommentBox } from "@/components/comment-box";
 import { ChapterListDialog } from "@/components/chapter-list-dialog";
 import { JsonLd } from "@/components/json-ld";
 import { ReadingProgressTracker } from "@/components/reading-progress-tracker";
-import { getChapter } from "@/lib/repository";
+import { getChapter, getRelatedNovels } from "@/lib/repository";
 import { chapterJsonLd } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/site";
+import type { Novel } from "@/lib/sample-data";
 
 type PageProps = {
   params: Promise<{ slug: string; chapterSlug: string }>;
@@ -47,13 +48,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function ChapterPage({ params }: PageProps) {
   const { slug, chapterSlug } = await params;
-  const result = await getChapter(slug, chapterSlug);
+  const [result, relatedNovels] = await Promise.all([
+    getChapter(slug, chapterSlug),
+    getRelatedNovels(slug, 3),
+  ]);
 
   if (!result) {
     notFound();
   }
 
   const { novel, chapter, previousChapter, nextChapter } = result;
+  const typedRelatedNovels = relatedNovels as Novel[];
   const canonicalPath = `/novels/${novel.slug}/chapter/${chapter.slug}`;
 
   return (
@@ -94,6 +99,28 @@ export default async function ChapterPage({ params }: PageProps) {
                 ))}
               </div>
             )}
+
+            <div className="mt-10 rounded-[8px] border border-rose-100 bg-[#fffaf8] p-5">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#9b405e]">
+                Keep reading
+              </p>
+              <h2 className="mt-2 font-serif text-2xl font-semibold text-[#281f2d]">
+                {nextChapter
+                  ? `Chapter ${nextChapter.chapterNumber}: ${nextChapter.title}`
+                  : novel.title}
+              </h2>
+              <Link
+                href={
+                  nextChapter
+                    ? `/novels/${novel.slug}/chapter/${nextChapter.slug}`
+                    : `/novels/${novel.slug}`
+                }
+                className="mt-4 inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-[#9b405e] px-4 text-sm font-semibold text-white transition hover:bg-[#81324c]"
+              >
+                {nextChapter ? "Next chapter" : "Back to chapters"}
+                <ArrowRight size={16} aria-hidden="true" />
+              </Link>
+            </div>
 
             <div className="mt-10 border-y border-rose-50 py-5">
               <AdSlot label="Chapter End AdSense Slot" />
@@ -152,6 +179,22 @@ export default async function ChapterPage({ params }: PageProps) {
             chapters={novel.chapters}
             currentChapterSlug={chapter.slug}
           />
+          {typedRelatedNovels.length > 0 ? (
+            <div className="rounded-[8px] border border-rose-100 bg-white p-5 shadow-sm">
+              <h2 className="font-serif text-2xl font-semibold text-[#281f2d]">More like this</h2>
+              <div className="mt-4 grid gap-3">
+                {typedRelatedNovels.map((relatedNovel: Novel) => (
+                  <Link
+                    key={relatedNovel.slug}
+                    href={`/novels/${relatedNovel.slug}`}
+                    className="rounded-[8px] bg-[#fffaf8] px-3 py-2 text-sm font-semibold leading-6 text-[#5f515f] transition hover:bg-[#f8f1ee] hover:text-[#9b405e]"
+                  >
+                    {relatedNovel.title}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ) : null}
           <AdSlot label="Reader Sidebar AdSense Slot" />
         </aside>
       </div>

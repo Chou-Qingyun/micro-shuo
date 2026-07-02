@@ -2,7 +2,6 @@ import Link from "next/link";
 import { BookHeart, ChevronDown, Search } from "lucide-react";
 import { getCategories } from "@/lib/repository";
 import { UserMenu } from "@/components/user-menu";
-import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { categories as fallbackCategories, type Category } from "@/lib/sample-data";
 
 // 导航栏主要分类的显示数量，超出部分收进「More」下拉
@@ -26,7 +25,6 @@ export async function Header() {
   const typedCategories = categories as Category[];
   const primaryCategories = typedCategories.slice(0, PRIMARY_NAV_COUNT);
   const moreCategories = typedCategories.slice(PRIMARY_NAV_COUNT);
-  const isAdmin = await isAdminAuthenticated();
 
   return (
     <header className="sticky top-0 z-30 border-b border-rose-100/80 bg-[#fffaf8]/90 backdrop-blur-xl">
@@ -90,7 +88,7 @@ export async function Header() {
           >
             <Search size={18} aria-hidden="true" />
           </Link>
-          <UserMenu isAdmin={isAdmin} />
+          <UserMenu />
         </div>
       </div>
     </header>

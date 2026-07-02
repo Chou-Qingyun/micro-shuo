@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { adminCookieName } from "@/lib/admin-auth";
 import {
   createChapter,
@@ -12,6 +12,7 @@ import {
   updateChapter,
   updateNovel,
 } from "@/lib/content-store";
+import { publicContentCacheTag } from "@/lib/repository";
 import { prisma } from "@/lib/prisma";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
@@ -32,6 +33,8 @@ function getStatus(formData: FormData) {
 }
 
 function revalidateContentPaths(slug?: string, categorySlug?: string) {
+  revalidateTag(publicContentCacheTag, { expire: 0 });
+
   revalidatePath("/");
   revalidatePath("/search");
   revalidatePath("/sitemap.xml");

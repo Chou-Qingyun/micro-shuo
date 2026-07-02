@@ -7,10 +7,11 @@ import { AdSlot } from "@/components/ad-slot";
 import { BookmarkButton } from "@/components/bookmark-button";
 import { CommentBox } from "@/components/comment-box";
 import { JsonLd } from "@/components/json-ld";
+import { NovelCard } from "@/components/novel-card";
 import { SubscribeForm } from "@/components/subscribe-form";
-import { getCategories, getNovelBySlug } from "@/lib/repository";
+import { getCategories, getNovelBySlug, getRelatedNovels } from "@/lib/repository";
 import { novelJsonLd } from "@/lib/seo";
-import type { Category, Chapter } from "@/lib/sample-data";
+import type { Category, Chapter, Novel } from "@/lib/sample-data";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -46,13 +47,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function NovelDetailPage({ params }: PageProps) {
   const { slug } = await params;
-  const [novel, categories] = await Promise.all([getNovelBySlug(slug), getCategories()]);
+  const [novel, categories, relatedNovels] = await Promise.all([
+    getNovelBySlug(slug),
+    getCategories(),
+    getRelatedNovels(slug, 4),
+  ]);
 
   if (!novel) {
     notFound();
   }
 
   const typedCategories = categories as Category[];
+  const typedRelatedNovels = relatedNovels as Novel[];
   const category = typedCategories.find((item: Category) => item.slug === novel.categorySlug);
   const firstChapter = novel.chapters[0];
 
@@ -177,6 +183,24 @@ export default async function NovelDetailPage({ params }: PageProps) {
           <div className="mt-6">
             <CommentBox novelSlug={novel.slug} />
           </div>
+
+          {typedRelatedNovels.length > 0 ? (
+            <section className="mt-10">
+              <div className="mb-5">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#9b405e]">
+                  More to read
+                </p>
+                <h2 className="mt-2 font-serif text-3xl font-semibold text-[#281f2d]">
+                  Similar sweet romance picks
+                </h2>
+              </div>
+              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                {typedRelatedNovels.map((relatedNovel: Novel) => (
+                  <NovelCard key={relatedNovel.slug} novel={relatedNovel} />
+                ))}
+              </div>
+            </section>
+          ) : null}
         </section>
       </div>
     </div>

@@ -1,6 +1,13 @@
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { contentToHtml, richContentToParagraphs } from "@/lib/rich-content";
 import type { Category, Chapter, Novel } from "@/lib/sample-data";
+
+export const publicContentCacheTag = "public-content";
+const publicContentCacheOptions = {
+  tags: [publicContentCacheTag],
+  revalidate: 3600,
+};
 
 type DbNovelStatus = "ONGOING" | "COMPLETED" | "HIATUS";
 type NovelWithRelations = Awaited<ReturnType<typeof getNovelRecords>>[number];
@@ -81,7 +88,7 @@ async function getNovelRecords() {
   });
 }
 
-export async function getCategories(): Promise<Category[]> {
+const getCachedCategories = unstable_cache(async (): Promise<Category[]> => {
   const categories = await prisma.category.findMany({
     orderBy: {
       createdAt: "asc",
@@ -94,11 +101,19 @@ export async function getCategories(): Promise<Category[]> {
     description: category.description,
     tone: category.tone || category.description,
   }));
+}, ["public-categories"], publicContentCacheOptions);
+
+export async function getCategories(): Promise<Category[]> {
+  return getCachedCategories();
 }
 
-export async function getNovels(): Promise<Novel[]> {
+const getCachedNovels = unstable_cache(async (): Promise<Novel[]> => {
   const novels = await getNovelRecords();
   return novels.map((novel: NovelWithRelations) => mapNovel(novel));
+}, ["public-novels"], publicContentCacheOptions);
+
+export async function getNovels(): Promise<Novel[]> {
+  return getCachedNovels();
 }
 
 export async function getFeaturedNovels(): Promise<Novel[]> {
@@ -110,7 +125,7 @@ export async function getLatestNovels(): Promise<Novel[]> {
   return getNovels();
 }
 
-export async function getCategoryBySlug(slug: string): Promise<Category | undefined> {
+const getCachedCategoryBySlug = unstable_cache(async (slug: string): Promise<Category | undefined> => {
   const category = await prisma.category.findUnique({
     where: { slug },
   });
@@ -125,9 +140,13 @@ export async function getCategoryBySlug(slug: string): Promise<Category | undefi
     description: category.description,
     tone: category.tone || category.description,
   };
+}, ["public-category-by-slug"], publicContentCacheOptions);
+
+export async function getCategoryBySlug(slug: string): Promise<Category | undefined> {
+  return getCachedCategoryBySlug(slug);
 }
 
-export async function getNovelsByCategory(slug: string): Promise<Novel[]> {
+const getCachedNovelsByCategory = unstable_cache(async (slug: string): Promise<Novel[]> => {
   const novels = await prisma.novel.findMany({
     where: {
       category: {
@@ -151,9 +170,13 @@ export async function getNovelsByCategory(slug: string): Promise<Novel[]> {
   });
 
   return (novels as NovelWithRelations[]).map((novel: NovelWithRelations) => mapNovel(novel));
+}, ["public-novels-by-category"], publicContentCacheOptions);
+
+export async function getNovelsByCategory(slug: string): Promise<Novel[]> {
+  return getCachedNovelsByCategory(slug);
 }
 
-export async function getNovelBySlug(slug: string): Promise<Novel | undefined> {
+const getCachedNovelBySlug = unstable_cache(async (slug: string): Promise<Novel | undefined> => {
   const novel = await prisma.novel.findUnique({
     where: { slug },
     include: {
@@ -172,6 +195,10 @@ export async function getNovelBySlug(slug: string): Promise<Novel | undefined> {
   });
 
   return novel ? mapNovel(novel) : undefined;
+}, ["public-novel-by-slug"], publicContentCacheOptions);
+
+export async function getNovelBySlug(slug: string): Promise<Novel | undefined> {
+  return getCachedNovelBySlug(slug);
 }
 
 export async function getChapter(
@@ -195,6 +222,32 @@ export async function getChapter(
       (item: Chapter) => item.chapterNumber === chapter.chapterNumber + 1,
     ),
   };
+}
+
+export async function getRelatedNovels(novelSlug: string, limit = 3): Promise<Novel[]> {
+  const novels = await getNovels();
+  const current = novels.find((novel: Novel) => novel.slug === novelSlug);
+
+  if (!current) {
+    return novels.slice(0, limit);
+  }
+
+  const currentTags = new Set(current.tags.map((tag: string) => tag.toLowerCase()));
+
+  return novels
+    .filter((novel: Novel) => novel.slug !== novelSlug)
+    .map((novel: Novel) => {
+      const sharedTags = novel.tags.filter((tag: string) => currentTags.has(tag.toLowerCase())).length;
+      const categoryBoost = novel.categorySlug === current.categorySlug ? 3 : 0;
+
+      return {
+        novel,
+        score: categoryBoost + sharedTags,
+      };
+    })
+    .sort((a, b) => b.score - a.score)
+    .map((item) => item.novel)
+    .slice(0, limit);
 }
 
 export async function searchNovels(query: string): Promise<Novel[]> {

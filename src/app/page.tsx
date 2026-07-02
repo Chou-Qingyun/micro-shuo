@@ -1,25 +1,41 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, BookOpen, Crown, Gem, HeartHandshake, Search } from "lucide-react";
 import { AdSlot } from "@/components/ad-slot";
 import { FeaturedNovelCarousel } from "@/components/featured-novel-carousel";
 import { SubscribeForm } from "@/components/subscribe-form";
-import { getCategories, getFeaturedNovels, getLatestNovels, getNovels } from "@/lib/repository";
+import { getCategories, getNovels } from "@/lib/repository";
+import { topics } from "@/lib/topics";
 import type { Category, Novel } from "@/lib/sample-data";
 
 export const dynamic = "force-dynamic";
 
+export const metadata: Metadata = {
+  title: "Chinese Romance Novels in English",
+  description:
+    "Read Chinese romance novels in English, including CEO romance, rebirth revenge, transmigration sweetness, billionaire love stories, and campus first love.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Chinese Romance Novels in English",
+    description:
+      "A sweet English-reading library for CEO romance, rebirth romance, transmigration romance, billionaire love stories, and campus first love.",
+    type: "website",
+  },
+};
+
 export default async function Home() {
-  const [categories, featuredNovels, allNovels, latestNovels] = await Promise.all([
+  const [categories, allNovels] = await Promise.all([
     getCategories(),
-    getFeaturedNovels(),
     getNovels(),
-    getLatestNovels(),
   ]);
   const typedCategories = categories as Category[];
-  const typedFeaturedNovels = featuredNovels as Novel[];
   const typedAllNovels = allNovels as Novel[];
-  const typedLatestNovels = latestNovels as Novel[];
+  const typedFeaturedNovels = typedAllNovels.slice(0, 3);
+  const typedLatestNovels = typedAllNovels;
+  const homeTopics = topics.slice(1, 5);
 
   return (
     <>
@@ -38,12 +54,12 @@ export default async function Home() {
               ))}
             </div>
             <h1 className="max-w-3xl font-serif text-5xl font-semibold leading-[0.98] text-[#281f2d] sm:text-6xl lg:text-7xl">
-              Sweet Chinese romance for soft nights and powerful feelings.
+              Read Chinese romance novels in English.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-[#5f515f]">
-              A curated library for CEO love stories, Cinderella turns, rebirth
-              sweetness, transmigration warmth, and campus crushes with clean,
-              comfortable reading.
+              A curated library for CEO love stories, rebirth revenge,
+              transmigration sweetness, billionaire devotion, and campus crushes
+              with clean, comfortable reading.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
@@ -125,6 +141,34 @@ export default async function Home() {
               <p className="mt-2 text-sm leading-6 text-[#6c5b68]">{category.description}</p>
             </Link>
           ))}
+        </div>
+      </section>
+
+      <section className="border-y border-rose-100 bg-white/70">
+        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+          <div className="mb-7 flex items-end justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#9b405e]">
+                Reader paths
+              </p>
+              <h2 className="mt-2 font-serif text-4xl font-semibold text-[#281f2d]">
+                Browse popular romance tropes
+              </h2>
+            </div>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {homeTopics.map((topic) => (
+              <Link
+                key={topic.slug}
+                href={`/topics/${topic.slug}`}
+                className="rounded-[8px] border border-rose-100 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-[0_18px_50px_rgba(75,43,58,0.1)]"
+              >
+                <Gem className="text-[#9b405e]" size={24} aria-hidden="true" />
+                <h3 className="mt-4 text-lg font-semibold text-[#281f2d]">{topic.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-[#6c5b68]">{topic.description}</p>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 

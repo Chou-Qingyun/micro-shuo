@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getCategories, getNovels } from "@/lib/repository";
 import { absoluteUrl } from "@/lib/site";
+import { topics } from "@/lib/topics";
 import type { Category, Chapter, Novel } from "@/lib/sample-data";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +25,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: new Date(),
   }));
 
+  const topicRoutes = topics.map((topic) => ({
+    url: absoluteUrl(`/topics/${topic.slug}`),
+    lastModified: new Date(),
+  }));
+
   const novelRoutes = typedNovels.flatMap((novel: Novel) => [
     {
       url: absoluteUrl(`/novels/${novel.slug}`),
@@ -35,5 +41,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
   ]);
 
-  return [...staticRoutes, ...categoryRoutes, ...novelRoutes];
+  return [...staticRoutes, ...categoryRoutes, ...topicRoutes, ...novelRoutes];
 }
