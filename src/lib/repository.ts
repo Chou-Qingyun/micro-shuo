@@ -11,6 +11,7 @@ const publicContentCacheOptions = {
 
 type DbNovelStatus = "ONGOING" | "COMPLETED" | "HIATUS";
 type NovelWithRelations = Awaited<ReturnType<typeof getNovelRecords>>[number];
+type NovelSummaryRecord = Awaited<ReturnType<typeof getNovelSummaryRecords>>[number];
 type CategoryRecord = {
   name: string;
   slug: string;
@@ -22,6 +23,19 @@ type ChapterResult = {
   chapter: Chapter;
   previousChapter?: Chapter;
   nextChapter?: Chapter;
+};
+
+export type NovelSummary = {
+  title: string;
+  slug: string;
+  categorySlug: string;
+  coverUrl: string;
+  status: Novel["status"];
+  tags: string[];
+  excerpt: string;
+  description: string;
+  updatedAt: string;
+  chapterCount: number;
 };
 
 function toDateString(date: Date) {
@@ -69,6 +83,21 @@ function mapNovel(novel: NovelWithRelations): Novel {
   };
 }
 
+function mapNovelSummary(novel: NovelSummaryRecord): NovelSummary {
+  return {
+    title: novel.title,
+    slug: novel.slug,
+    categorySlug: novel.category.slug,
+    coverUrl: novel.coverUrl,
+    status: toUiStatus(novel.status as DbNovelStatus),
+    tags: novel.tags.map((item: NovelSummaryRecord["tags"][number]) => item.tag.name),
+    excerpt: novel.excerpt,
+    description: novel.description,
+    updatedAt: toDateString(novel.updatedAt),
+    chapterCount: novel._count.chapters,
+  };
+}
+
 async function getNovelRecords() {
   return prisma.novel.findMany({
     orderBy: [{ updatedAt: "desc" }, { publishedAt: "desc" }],
@@ -82,6 +111,40 @@ async function getNovelRecords() {
       chapters: {
         orderBy: {
           chapterNumber: "asc",
+        },
+      },
+    },
+  });
+}
+
+async function getNovelSummaryRecords() {
+  return prisma.novel.findMany({
+    orderBy: [{ updatedAt: "desc" }, { publishedAt: "desc" }],
+    select: {
+      title: true,
+      slug: true,
+      coverUrl: true,
+      status: true,
+      excerpt: true,
+      description: true,
+      updatedAt: true,
+      category: {
+        select: {
+          slug: true,
+        },
+      },
+      tags: {
+        select: {
+          tag: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
+      _count: {
+        select: {
+          chapters: true,
         },
       },
     },
@@ -114,6 +177,15 @@ const getCachedNovels = unstable_cache(async (): Promise<Novel[]> => {
 
 export async function getNovels(): Promise<Novel[]> {
   return getCachedNovels();
+}
+
+const getCachedNovelSummaries = unstable_cache(async (): Promise<NovelSummary[]> => {
+  const novels = await getNovelSummaryRecords();
+  return novels.map((novel: NovelSummaryRecord) => mapNovelSummary(novel));
+}, ["public-novel-summaries"], publicContentCacheOptions);
+
+export async function getNovelSummaries(): Promise<NovelSummary[]> {
+  return getCachedNovelSummaries();
 }
 
 export async function getFeaturedNovels(): Promise<Novel[]> {

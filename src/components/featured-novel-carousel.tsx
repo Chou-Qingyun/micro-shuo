@@ -4,12 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import type { Category, Novel } from "@/lib/sample-data";
+import type { NovelSummary } from "@/lib/repository";
+import type { Category } from "@/lib/sample-data";
 
 const PAGE_SIZE = 9;
 
-function chunkNovels(novels: Novel[]) {
-  const pages: Novel[][] = [];
+function chunkNovels(novels: NovelSummary[]) {
+  const pages: NovelSummary[][] = [];
 
   for (let index = 0; index < novels.length; index += PAGE_SIZE) {
     pages.push(novels.slice(index, index + PAGE_SIZE));
@@ -22,7 +23,7 @@ export function FeaturedNovelCarousel({
   novels,
   categories,
 }: {
-  novels: Novel[];
+  novels: NovelSummary[];
   categories: Category[];
 }) {
   const pages = useMemo(() => chunkNovels(novels), [novels]);

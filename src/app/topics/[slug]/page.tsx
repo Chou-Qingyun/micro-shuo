@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, BookOpen, Sparkles } from "lucide-react";
+import { JsonLd } from "@/components/json-ld";
 import { NovelCard } from "@/components/novel-card";
 import { getNovels } from "@/lib/repository";
 import { getTopicBySlug, getTopicNovels, topics } from "@/lib/topics";
@@ -47,9 +48,24 @@ export default async function TopicPage({ params }: PageProps) {
   const topicNovels = getTopicNovels(topic, novels);
   const fallbackNovels = topicNovels.length > 0 ? topicNovels : novels.slice(0, 4);
   const relatedTopics = topics.filter((item) => item.slug !== topic.slug).slice(0, 4);
+  const faqJsonLd = topic.faq?.length
+    ? {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: topic.faq.map((item) => ({
+          "@type": "Question",
+          name: item.question,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: item.answer,
+          },
+        })),
+      }
+    : null;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      {faqJsonLd ? <JsonLd data={faqJsonLd} /> : null}
       <section className="grid gap-8 lg:grid-cols-[1fr_320px]">
         <div className="max-w-3xl">
           <p className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-[#9b405e]">
@@ -106,6 +122,29 @@ export default async function TopicPage({ params }: PageProps) {
           ))}
         </div>
       </section>
+
+      {topic.faq?.length ? (
+        <section className="mt-12 border-t border-rose-100 pt-10">
+          <div className="mb-7 max-w-3xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#9b405e]">
+              Reader questions
+            </p>
+            <h2 className="mt-2 font-serif text-4xl font-semibold text-[#281f2d]">
+              What to know before you start
+            </h2>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            {topic.faq.map((item) => (
+              <div key={item.question} className="rounded-[8px] border border-rose-100 bg-white p-5 shadow-sm">
+                <h3 className="text-lg font-semibold leading-7 text-[#281f2d]">
+                  {item.question}
+                </h3>
+                <p className="mt-3 text-sm leading-6 text-[#6c5b68]">{item.answer}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }

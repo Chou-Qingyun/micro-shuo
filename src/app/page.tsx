@@ -5,9 +5,9 @@ import { ArrowRight, BookOpen, Crown, Gem, HeartHandshake, Search } from "lucide
 import { AdSlot } from "@/components/ad-slot";
 import { FeaturedNovelCarousel } from "@/components/featured-novel-carousel";
 import { SubscribeForm } from "@/components/subscribe-form";
-import { getCategories, getNovels } from "@/lib/repository";
+import { getCategories, getNovelSummaries, type NovelSummary } from "@/lib/repository";
 import { topics } from "@/lib/topics";
-import type { Category, Novel } from "@/lib/sample-data";
+import type { Category } from "@/lib/sample-data";
 
 export const dynamic = "force-dynamic";
 
@@ -29,12 +29,13 @@ export const metadata: Metadata = {
 export default async function Home() {
   const [categories, allNovels] = await Promise.all([
     getCategories(),
-    getNovels(),
+    getNovelSummaries(),
   ]);
   const typedCategories = categories as Category[];
-  const typedAllNovels = allNovels as Novel[];
+  const typedAllNovels = allNovels as NovelSummary[];
   const typedFeaturedNovels = typedAllNovels.slice(0, 3);
-  const typedLatestNovels = typedAllNovels;
+  const carouselNovels = typedAllNovels.slice(0, 18);
+  const typedLatestNovels = typedAllNovels.slice(0, 8);
   const homeTopics = topics.slice(1, 5);
 
   return (
@@ -186,7 +187,7 @@ export default async function Home() {
             Browse all
           </Link>
         </div>
-        <FeaturedNovelCarousel novels={typedAllNovels} categories={typedCategories} />
+        <FeaturedNovelCarousel novels={carouselNovels} categories={typedCategories} />
       </section>
 
       <section className="border-y border-rose-100 bg-white/70">
@@ -200,7 +201,7 @@ export default async function Home() {
             </h2>
           </div>
           <div className="grid gap-3">
-            {typedLatestNovels.map((novel: Novel) => (
+            {typedLatestNovels.map((novel: NovelSummary) => (
               <Link
                 key={novel.slug}
                 href={`/novels/${novel.slug}`}
@@ -209,7 +210,7 @@ export default async function Home() {
                 <span>
                   <span className="block font-semibold text-[#281f2d]">{novel.title}</span>
                   <span className="mt-1 block text-sm text-[#7a6b76]">
-                    {novel.chapters.length} chapters · {novel.tags.slice(0, 2).join(", ")}
+                    {novel.chapterCount} chapters · {novel.tags.slice(0, 2).join(", ")}
                   </span>
                 </span>
                 <ArrowRight className="shrink-0 text-[#9b405e]" size={18} aria-hidden="true" />

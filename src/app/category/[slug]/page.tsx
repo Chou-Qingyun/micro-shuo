@@ -18,11 +18,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return {};
   }
 
+  const pageTitle = `${category.name} Novels in English`;
+
   return {
-    title: category.name,
-    description: category.description,
+    title: pageTitle,
+    description: `Read ${category.name.toLowerCase()} novels in English. Browse sweet Chinese romance stories with clean chapters, emotional tension, and comfortable reading.`,
     alternates: {
       canonical: `/category/${category.slug}`,
+    },
+    openGraph: {
+      title: pageTitle,
+      description: category.description,
+      type: "website",
     },
   };
 }
@@ -46,9 +53,14 @@ export default async function CategoryPage({ params }: PageProps) {
           Category
         </p>
         <h1 className="mt-2 font-serif text-5xl font-semibold text-[#281f2d]">
-          {category.name}
+          {category.name} Novels in English
         </h1>
         <p className="mt-4 text-lg leading-8 text-[#5f515f]">{category.tone}</p>
+        <p className="mt-4 text-base leading-7 text-[#6c5b68]">
+          Browse {category.name.toLowerCase()} stories for readers who want
+          Chinese romance novels translated into smooth English, with clear
+          chapter navigation and a gentle reading pace.
+        </p>
       </div>
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {typedNovels.map((novel: Novel) => (
