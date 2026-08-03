@@ -8,7 +8,7 @@ import { CommentBox } from "@/components/comment-box";
 import { ChapterListDialog } from "@/components/chapter-list-dialog";
 import { JsonLd } from "@/components/json-ld";
 import { ReadingProgressTracker } from "@/components/reading-progress-tracker";
-import { getChapter, getRelatedNovels } from "@/lib/repository";
+import { getChapter, getNovels, getRelatedNovels } from "@/lib/repository";
 import { chapterJsonLd } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/site";
 import type { Novel } from "@/lib/sample-data";
@@ -17,7 +17,18 @@ type PageProps = {
   params: Promise<{ slug: string; chapterSlug: string }>;
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  const novels = await getNovels();
+
+  return novels.flatMap((novel) =>
+    novel.chapters.map((chapter) => ({
+      slug: novel.slug,
+      chapterSlug: chapter.slug,
+    })),
+  );
+}
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug, chapterSlug } = await params;

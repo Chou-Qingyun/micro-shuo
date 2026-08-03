@@ -14,9 +14,11 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/search",
   },
+  robots: {
+    index: false,
+    follow: true,
+  },
 };
-
-export const dynamic = "force-dynamic";
 
 export default async function SearchPage({ searchParams }: PageProps) {
   const { q = "" } = await searchParams;

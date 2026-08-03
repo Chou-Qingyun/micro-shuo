@@ -5,7 +5,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { usePathname } from "next/navigation";
 
 const excludedPrefixes = ["/admin", "/account"];
-const excludedPaths = new Set(["/login", "/search"]);
+const excludedPaths = new Set(["/login"]);
 
 export function VercelInsights() {
   const pathname = usePathname();

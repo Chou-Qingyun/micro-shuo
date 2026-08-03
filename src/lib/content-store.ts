@@ -6,12 +6,15 @@ export type NovelInput = Omit<Novel, "chapters" | "updatedAt"> & {
   updatedAt?: string;
 };
 
-export type ChapterInput = Omit<Chapter, "chapterNumber" | "content"> & {
+export type ChapterInput = Omit<Chapter, "chapterNumber" | "content" | "updatedAt"> & {
   chapterNumber?: number;
   content: string | string[];
 };
 type NovelTagTransaction = Pick<typeof prisma, "novelTag" | "tag">;
-type ContentTransaction = Pick<typeof prisma, "category" | "novel" | "novelTag" | "tag">;
+type ContentTransaction = Pick<
+  typeof prisma,
+  "category" | "chapter" | "novel" | "novelTag" | "tag"
+>;
 type DbNovelStatus = "ONGOING" | "COMPLETED";
 type StoredChapterSummary = {
   id: string;
@@ -198,18 +201,27 @@ export async function createChapter(novelSlug: string, input: ChapterInput) {
   const paragraphs = richContentToParagraphs(richContent);
   const publishedAt = input.publishedAt ? new Date(input.publishedAt) : new Date();
 
-  const chapter = await prisma.chapter.create({
-    data: {
-      novelId: typedNovel.id,
-      title: input.title,
-      slug,
-      chapterNumber,
-      publishedAt,
-      content: richContent,
-      wordCount: paragraphs.join(" ").split(/\s+/).filter(Boolean).length,
-      seoTitle: input.seoTitle?.trim() || null,
-      seoDescription: input.seoDescription?.trim() || null,
-    },
+  const chapter = await prisma.$transaction(async (transaction: ContentTransaction) => {
+    const createdChapter = await transaction.chapter.create({
+      data: {
+        novelId: typedNovel.id,
+        title: input.title,
+        slug,
+        chapterNumber,
+        publishedAt,
+        content: richContent,
+        wordCount: paragraphs.join(" ").split(/\s+/).filter(Boolean).length,
+        seoTitle: input.seoTitle?.trim() || null,
+        seoDescription: input.seoDescription?.trim() || null,
+      },
+    });
+
+    await transaction.novel.update({
+      where: { id: typedNovel.id },
+      data: { updatedAt: new Date() },
+    });
+
+    return createdChapter;
   });
 
   return {
@@ -249,18 +261,27 @@ export async function updateChapter(novelSlug: string, chapterSlug: string, inpu
   const paragraphs = richContentToParagraphs(richContent);
   const publishedAt = input.publishedAt ? new Date(input.publishedAt) : current.publishedAt;
 
-  const chapter = await prisma.chapter.update({
-    where: { id: current.id },
-    data: {
-      title: input.title,
-      slug,
-      chapterNumber,
-      publishedAt,
-      content: richContent,
-      wordCount: paragraphs.join(" ").split(/\s+/).filter(Boolean).length,
-      seoTitle: input.seoTitle?.trim() || null,
-      seoDescription: input.seoDescription?.trim() || null,
-    },
+  const chapter = await prisma.$transaction(async (transaction: ContentTransaction) => {
+    const updatedChapter = await transaction.chapter.update({
+      where: { id: current.id },
+      data: {
+        title: input.title,
+        slug,
+        chapterNumber,
+        publishedAt,
+        content: richContent,
+        wordCount: paragraphs.join(" ").split(/\s+/).filter(Boolean).length,
+        seoTitle: input.seoTitle?.trim() || null,
+        seoDescription: input.seoDescription?.trim() || null,
+      },
+    });
+
+    await transaction.novel.update({
+      where: { id: typedNovel.id },
+      data: { updatedAt: new Date() },
+    });
+
+    return updatedChapter;
   });
 
   return {

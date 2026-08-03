@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { LogOut, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -94,9 +95,11 @@ export function UserMenu() {
         className="grid size-10 place-items-center overflow-hidden rounded-[8px] bg-[#9b405e] text-white shadow-sm transition hover:bg-[#81324c]"
       >
         {profile.avatarUrl ? (
-          <img
+          <Image
             src={profile.avatarUrl}
             alt={profile.displayName ?? "User avatar"}
+            width={40}
+            height={40}
             className="size-full object-cover"
           />
         ) : (

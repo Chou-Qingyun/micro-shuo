@@ -96,7 +96,6 @@ export function FeaturedNovelCarousel({
                         alt={`${novel.title} cover`}
                         fill
                         sizes="72px"
-                        priority={rank <= 3}
                         className="object-cover"
                       />
                     </span>

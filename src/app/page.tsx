@@ -9,7 +9,7 @@ import { getCategories, getNovelSummaries, type NovelSummary } from "@/lib/repos
 import { topics } from "@/lib/topics";
 import type { Category } from "@/lib/sample-data";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Chinese Romance Novels in English",

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import { Bell, BookOpen, Camera, Heart, Save, ShieldCheck, UserRound } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -244,7 +245,13 @@ export function AccountDashboard() {
           </div>
           <div className="grid size-16 place-items-center overflow-hidden rounded-[8px] bg-[#9b405e] text-white">
             {avatarUrl ? (
-              <img src={avatarUrl} alt="User avatar" className="size-full object-cover" />
+              <Image
+                src={avatarUrl}
+                alt="User avatar"
+                width={64}
+                height={64}
+                className="size-full object-cover"
+              />
             ) : (
               <UserRound size={28} aria-hidden="true" />
             )}
@@ -318,8 +325,14 @@ export function AccountDashboard() {
                     key={book.novelSlug}
                     className="grid gap-4 rounded-[8px] border border-rose-100 bg-[#fffaf8] p-4 sm:grid-cols-[88px_1fr_auto]"
                   >
-                    <div className="aspect-[4/5] overflow-hidden rounded-[8px] bg-white">
-                      <img src={book.coverUrl} alt={`${book.title} cover`} className="size-full object-cover" />
+                    <div className="relative aspect-[4/5] overflow-hidden rounded-[8px] bg-white">
+                      <Image
+                        src={book.coverUrl}
+                        alt={`${book.title} cover`}
+                        fill
+                        sizes="88px"
+                        className="object-cover"
+                      />
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold text-[#281f2d]">{book.title}</h3>
@@ -358,8 +371,14 @@ export function AccountDashboard() {
                     key={book.novelSlug}
                     className="grid gap-4 rounded-[8px] border border-rose-100 bg-[#fffaf8] p-4 sm:grid-cols-[88px_1fr_auto]"
                   >
-                    <div className="aspect-[4/5] overflow-hidden rounded-[8px] bg-white">
-                      <img src={book.coverUrl} alt={`${book.title} cover`} className="size-full object-cover" />
+                    <div className="relative aspect-[4/5] overflow-hidden rounded-[8px] bg-white">
+                      <Image
+                        src={book.coverUrl}
+                        alt={`${book.title} cover`}
+                        fill
+                        sizes="88px"
+                        className="object-cover"
+                      />
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold text-[#281f2d]">{book.title}</h3>
@@ -400,8 +419,14 @@ export function AccountDashboard() {
                     key={book.novelSlug}
                     className="grid gap-4 rounded-[8px] border border-rose-100 bg-[#fffaf8] p-4 sm:grid-cols-[88px_1fr_auto]"
                   >
-                    <div className="aspect-[4/5] overflow-hidden rounded-[8px] bg-white">
-                      <img src={book.coverUrl} alt={`${book.title} cover`} className="size-full object-cover" />
+                    <div className="relative aspect-[4/5] overflow-hidden rounded-[8px] bg-white">
+                      <Image
+                        src={book.coverUrl}
+                        alt={`${book.title} cover`}
+                        fill
+                        sizes="88px"
+                        className="object-cover"
+                      />
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold text-[#281f2d]">{book.title}</h3>
@@ -442,7 +467,13 @@ export function AccountDashboard() {
             <div className="flex flex-wrap items-center gap-4">
               <div className="grid size-20 place-items-center overflow-hidden rounded-[8px] bg-[#9b405e] text-white">
                 {avatarUrl ? (
-                  <img src={avatarUrl} alt="User avatar" className="size-full object-cover" />
+                  <Image
+                    src={avatarUrl}
+                    alt="User avatar"
+                    width={80}
+                    height={80}
+                    className="size-full object-cover"
+                  />
                 ) : (
                   <UserRound size={32} aria-hidden="true" />
                 )}

@@ -9,7 +9,7 @@ import { CommentBox } from "@/components/comment-box";
 import { JsonLd } from "@/components/json-ld";
 import { NovelCard } from "@/components/novel-card";
 import { SubscribeForm } from "@/components/subscribe-form";
-import { getCategories, getNovelBySlug, getRelatedNovels } from "@/lib/repository";
+import { getCategories, getNovelBySlug, getNovels, getRelatedNovels } from "@/lib/repository";
 import { novelJsonLd } from "@/lib/seo";
 import type { Category, Chapter, Novel } from "@/lib/sample-data";
 
@@ -17,7 +17,12 @@ type PageProps = {
   params: Promise<{ slug: string }>;
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  const novels = await getNovels();
+  return novels.map((novel) => ({ slug: novel.slug }));
+}
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;

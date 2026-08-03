@@ -10,6 +10,7 @@ export type Chapter = {
   slug: string;
   chapterNumber: number;
   publishedAt: string;
+  updatedAt?: string;
   content: string[];
   contentHtml?: string | null;
   seoTitle?: string | null;

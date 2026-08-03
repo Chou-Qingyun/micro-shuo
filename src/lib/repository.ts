@@ -38,6 +38,16 @@ export type NovelSummary = {
   chapterCount: number;
 };
 
+export type SitemapNovelEntry = {
+  slug: string;
+  updatedAt: string;
+  chapters: Array<{
+    slug: string;
+    publishedAt: string;
+    updatedAt: string;
+  }>;
+};
+
 function toDateString(date: Date) {
   return date.toISOString().slice(0, 10);
 }
@@ -56,6 +66,7 @@ function mapChapter(chapter: NovelWithRelations["chapters"][number]): Chapter {
     slug: chapter.slug,
     chapterNumber: chapter.chapterNumber,
     publishedAt: toDateString(chapter.publishedAt),
+    updatedAt: toDateString(chapter.updatedAt),
     content: splitChapterContent(chapter.content),
     contentHtml: contentToHtml(chapter.content),
     seoTitle: chapter.seoTitle,
@@ -186,6 +197,36 @@ const getCachedNovelSummaries = unstable_cache(async (): Promise<NovelSummary[]>
 
 export async function getNovelSummaries(): Promise<NovelSummary[]> {
   return getCachedNovelSummaries();
+}
+
+const getCachedSitemapNovels = unstable_cache(async (): Promise<SitemapNovelEntry[]> => {
+  const novels = await prisma.novel.findMany({
+    select: {
+      slug: true,
+      updatedAt: true,
+      chapters: {
+        select: {
+          slug: true,
+          publishedAt: true,
+          updatedAt: true,
+        },
+      },
+    },
+  });
+
+  return novels.map((novel) => ({
+    slug: novel.slug,
+    updatedAt: novel.updatedAt.toISOString(),
+    chapters: novel.chapters.map((chapter) => ({
+      slug: chapter.slug,
+      publishedAt: chapter.publishedAt.toISOString(),
+      updatedAt: chapter.updatedAt.toISOString(),
+    })),
+  }));
+}, ["public-sitemap-novels"], publicContentCacheOptions);
+
+export async function getSitemapNovels(): Promise<SitemapNovelEntry[]> {
+  return getCachedSitemapNovels();
 }
 
 export async function getFeaturedNovels(): Promise<Novel[]> {
